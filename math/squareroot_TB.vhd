@@ -14,7 +14,7 @@ architecture arch of squareroot_TB is
 	signal din: ufixed(15 downto -16) := (others => '0');
 	signal dout: ufixed(15 downto -16);
 begin
-	uut: entity work.squareroot(clk, din, dout);
+	uut: entity work.squareroot port map(clk, din, dout);
 	clkProc: process
 	begin
 		wait for clkPd/2;
@@ -31,6 +31,9 @@ begin
 		din <= x"00100000"; -- 16
 		wait for 3*clkPd;
 		din <= x"00018000"; -- 1.5
+		wait for 3*clkPd;
+		din <= x"0FF00000";
+		wait;
 	end process mainTB;
 
 end arch;
