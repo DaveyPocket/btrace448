@@ -12,7 +12,6 @@ end squareroot;
 architecture arch of squareroot is
 	signal p_integer: std_logic_vector(15 downto 0);
 begin
-	p_integer <= std_logic_vector(ufixed(15 downto 0)); -- This might be wrong
-	slut: entity work.squarelut port map(clk, p_integer, dout);
-
+	p_integer <= std_logic_vector(input(15 downto 0));
+	squarelut: entity work.squarelut port map(clk, p_integer, dout);
 end arch;

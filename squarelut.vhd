@@ -11,6 +11,7 @@ entity squarelut is
 end squarelut;
 
 architecture arch of squarelut is
+	-- Unsigned Q16.16
 	type romlut is array(0 to 65535) of ufixed(15 downto -16);
 	constant data: romlut := 
 	("00000000000000000000000000000000",
