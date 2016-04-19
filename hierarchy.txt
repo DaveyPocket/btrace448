@@ -1,5 +1,5 @@
-squareroot_TB
---squareroot *** TODO: Need to test
+squareroot_TB *** Table works
+--squareroot *** TODO: linear interpolation
 ----squarelut
 
 frame_buf ***works
