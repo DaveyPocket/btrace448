@@ -12,6 +12,6 @@ end sub;
 architecture arch of sub is
 	signal cc: std_logic_vector(N downto 0);
 begin
-	cc <= a + not(b) + 1;
+	cc <= ('0' & a) + not(b) + 1;
 	c <= cc(N-1 downto 0);
 end arch;

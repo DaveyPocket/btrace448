@@ -17,4 +17,4 @@ package btrace_pack is
 			-- TODO: Change to fixed point
 			m_x, m_y, m_z: ufixed(15 downto -16);
 		end record;
-end pongpack;
+end btrace_pack;

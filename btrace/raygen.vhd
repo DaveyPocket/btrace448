@@ -1,7 +1,5 @@
 library ieee;
-library ieee_proposed.all;
 use ieee.std_logic_1164.all;
-use ieee_proposed.fixed_pkg.all;
 use work.btrace_pack.all;
 
 entity raygen is
@@ -18,11 +16,11 @@ architecture arch of raygen is
 	-- Integers
 	constant hsize: integer := 9;
 	constant vsize: integer := 8;
-	constant hsize_cat: integer := camera_reg_out.x'length;
-	constant vsize_cat: integer := camera_reg_out.y'length;
+	constant hsize_cat: integer := 32;
+	constant vsize_cat: integer := 32;
 
 	-- Other types
-	constant camera_point: point := ((others => '0'), (others => '0'), (others => '0'));
+	constant camera_point: point := (x"00100000", x"00100000", x"FFFF0000");
 	constant h_init: std_logic_vector(hsize-1 downto 0) := (others => '0');
 	constant v_init: std_logic_vector(vsize-1 downto 0) := (others => '0');
 
@@ -35,29 +33,41 @@ architecture arch of raygen is
 	signal vout_cat: std_logic_vector(vsize_cat-1 downto 0);
 	signal vector_x: std_logic_vector(hsize_cat-1 downto 0);
 	signal vector_y: std_logic_vector(vsize_cat-1 downto 0);
+
+	-- TODO fix this
+	signal vector_z: std_logic_vector(31 downto 0);
 begin
 	--
 	--- Component instantiation
 	--
 	
-	-- Camera coordinate register
+	-- Camera coordinate register (input: point_type, output: point_type)
 	camera_coord: entity work.point_reg port map(clk, rst, set_cam, camera_point, camera_reg_out);
 
-	-- Horizontal counter (X)
+	-- Horizontal counter (X) (initializes to zero, output std_logic_vector(hsize-1 downto 0))
 	hc: entity work.counter generic map(hsize) port map(clk, rst, clr_x, inc_x, '0', h_init, houtput);
 
-	-- Vertical counter (Y)
+	-- Vertical counter (Y) (initializes to zero, output std_logic_vector(vsize-1 downto 0))
 	vc: entity work.counter generic map(vsize) port map(clk, rst, clr_y, inc_y, '0', v_init, voutput);
 
-	-- Subtractors
-	subx: entity work.sub generic map(hsize_cat) port map(hout_cat, camera_reg_out.x, vector_x);
-	suby: entity work.sub generic map(vsize_cat) port map(vout_cat, camera_reg_out.y, vector_y);
+	--- Subtractors
+	-- Horizontal coordinate subractor ()
+	subx: entity work.sub generic map(hsize_cat) port map(hout_cat, std_logic_vector(camera_reg_out.x), vector_x);
+	-- Vertical coordinate subtractor ()
+	suby: entity work.sub generic map(vsize_cat) port map(vout_cat, std_logic_vector(camera_reg_out.y), vector_y);
 
+	subz: entity work.sub generic map(32) port map(x"00000000", std_logic_vector(camera_reg_out.z), vector_z);
 	--
-	---	Concatenation and additional concurrent statements
+	---	Concurrent statements
 	--
 
-	-- hout_cat
-	-- vout_cat
+	-- TODO remove fudge values
+	-- hout_cat (Concatenates 'integer' houtput with zero fractional portion)
+	hout_cat <= "0000000"&houtput&x"0000";
+	-- vout_cat (Concatenates 'integer' voutput with zero fractional portion)
+	vout_cat <= "00000000"&voutput&x"0000";
+	mv_x <= vector_x;
+	mv_y <= vector_y;
+	mv_z <= vector_z;
+
 end arch;
-

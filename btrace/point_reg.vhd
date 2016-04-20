@@ -9,16 +9,16 @@ entity point_reg is
 end point_reg;
 
 architecture arch of point_reg is
+	constant zero_point: point := ((others => '0'), (others => '0'), (others => '0'));
 begin
 	process(clk, rst)
 	begin
 		if rst = '1' then
-			Dout <= (others => '0');
+			Dout <= zero_point;
 		elsif rising_edge(clk) then
 			if en = '1' then
 				Dout <= Din;
 			end if;
 		end if;
 	end process;
-
 end arch;
