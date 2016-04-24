@@ -8,7 +8,9 @@ entity raygen is
 		set_cam: in std_logic;
 		inc_x, inc_y: in std_logic;
 		clr_x, clr_y: in std_logic;
-		mv_x, mv_y, mv_z: out std_logic_vector((int+fraction)-1 downto 0));
+		mv_x, mv_y, mv_z: out std_logic_vector((int+fraction)-1 downto 0);
+		--	TODO: remove fudge values for below pixel x and y coordinates
+		p_x, p_y: out std_logic_vector(9 downto 0));
 end raygen;
 
 architecture arch of raygen is
@@ -69,5 +71,9 @@ begin
 	mv_x <= vector_x;
 	mv_y <= vector_y;
 	mv_z <= vector_z;
+
+	-- Pixel coordinates
+	p_x <= houtput;
+	p_y <= '0' & voutput;
 
 end arch;

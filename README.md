@@ -12,7 +12,7 @@ The initial goal is to display spheres on a VGA display with simple point-light-
 - [x] Square-root LUT unit (Fixed-point representation)
   - [x] Test bench
   - [ ] Linear interpolation
-  - [ ] Add generator scripts to project
+  - [ ] Generator scripts
 - [x] Ray generator unit
   - [x] Test bench
   - [ ] Adjustable camera position
@@ -26,11 +26,16 @@ The initial goal is to display spheres on a VGA display with simple point-light-
 - [x] VGA display controller
   - [x] Frame buffer (BRAM)
   - [ ] Read/write multi-access arbiter
-  - [ ] 
-- [ ] Controller
 - [x] 'btrace' package
+- [ ] Controller
 
+## Project hierarchy
+
+- **btrace** - Ray tracing devices
+- **core** - Anything VGA and I/O
+- **math** - Arithmetic devices
 
 ## References
 
-Wikipedia: [Ray Tracing](https://en.wikipedia.org/wiki/Ray_tracing_(graphics))
+[Ray Tracing](https://en.wikipedia.org/wiki/Ray_tracing_(graphics)) - Wikipedia
+[FPGA Prototyping by VHDL Examples](http://academic.csuohio.edu/chu_p/rtl/fpga_vhdl.html) - Companion website to book

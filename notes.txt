@@ -1,0 +1,2 @@
+Each component has std_logic_vector I/O type
+Generic defined for integer and fraction portion of fixed point number
