@@ -13,9 +13,10 @@ entity datapath is
 
 		-- Datapath inputs (control)
 		next_obj, clr_obj_count: in std_logic;
-		table_sel, clr_z_reg, en_z_reg: in std_logic;
+		clr_z_reg, en_z_reg: in std_logic;
 		clr_x, clr_y, inc_x, inc_y: in std_logic;
 		z_to_buf: in std_logic;
+		table_sel: in std_logic_vector(1 downto 0);
 
 		-- Datapath outputs (status)
 		last_obj, obj_hit, p_tick_out: out std_logic;
@@ -34,10 +35,11 @@ architecture arch of datapath is
 	constant w_t_val: integer := 10;
 	constant w_int, w_frac: integer := 16;
 	constant w_data: integer := ?;
+	constant w_obj_tab: integer := 8;
 
 	-- Internal datapath signals
 	signal s_t_val, s_z_reg_out: std_logic_vector(w_t_val-1 downto 0);
-	signal s_obj_num, s_max_obj, s_tab_addr: std_logic_vector(7 downto 0);
+	signal s_obj_num, s_max_obj, s_tab_addr, s_obj_sel: std_logic_vector(w_obj_tab-1 downto 0);
 	signal s_compare_t, s_store: std_logic;
 	signal s_gen_px, s_gen_py, s_pixel_x, s_pixel_y, s_addr_buf_x, s_addr_buf_y: std_logic_vector(9 downto 0);
 	signal s_frame_buf_rgb: std_logic_vector(11 downto 0);
@@ -47,13 +49,13 @@ architecture arch of datapath is
 	signal p_tick: std_logic;
 begin
 	-- Object counter
-	obj_counter: entity work.counter generic map(8) port map(clk, rst, clr_obj_count, next_obj, '0', x"00", s_obj_num);
+	obj_counter: entity work.counter generic map(w_obj_tab) port map(clk, rst, clr_obj_count, next_obj, '0', x"00", s_obj_num);
 
 	-- Maximum objects register
-	max_obj_reg: entity work.reg generic map(8) port map(clk, rst, e_set_max, '0', e_num_obj, s_max_obj);
+	max_obj_reg: entity work.reg generic map(w_obj_tab) port map(clk, rst, e_set_max, '0', e_num_obj, s_max_obj);
 
 	-- Object index comparison
-	comp_obj_index: entity work.ucompare generic map(8, eq) port map(s_obj_num, s_max_obj, last_obj);
+	comp_obj_index: entity work.compare(arch_unsigned) generic map(8, eq) port map(s_obj_num, s_max_obj, last_obj);
 
 -- Object record table
 	--
@@ -66,15 +68,17 @@ begin
 	-- Depth (Z) register
 	z_reg: entity work.reg generic map(w_t_val) port map(clk, rst, s_store, clr_z_reg, s_t_val, s_z_reg_out);
 
+	-- Object proximity register
+	obj_prox_reg: entity work.reg generic map(w_obj_tab) port map(clk, rst, s_store, '0', s_obj_num, s_obj_sel);
+
 	-- Z-register comparator
 	-- TODO Need signed comparison
-	z_compare: entity work.ucompare
+	z_compare: entity work.compare(arch_signed) generic map(w_t_val, gte) port map(s_z_reg_out, s_t_val, s_compare_t);
 
 	-- Output interface (VGA sync + pixel buffer & overlay)
 	-- Use correct signalling from output interface and not vga_sync
 	out_interface: entity work.outputInteface port map(clk, rst, p_tick, s_pixel_x, s_pixel_y, s_frame_buf_rgb, "000000000000", hsync, vsync, RGB);
 
-	out_interface: entity work.outputInteface port map(clk, rst, hsync?, vsync?, video_on?, p_tick, pixel_x, pixel_y);
 
 	-- Frame buffer
 	-- TODO Adjust 
@@ -94,5 +98,11 @@ begin
 
 	-- p_tick_output
 	p_tick_out <= p_tick;
+
+	-- Record table index mux.
+	with table_sel select
+		s_tab_addr <= e_obj_addr when "00",
+					  s_obj_num when "01",
+					  s_obj_sel when others;
 
 end arch;

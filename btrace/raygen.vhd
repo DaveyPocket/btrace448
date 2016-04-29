@@ -79,7 +79,7 @@ begin
 	mv_z <= vector_z;
 
 	-- Pixel coordinates
-	p_x <= houtput;
-	p_y <= '0' & voutput;
+	p_x <= '0' & houtput;
+	p_y <= "00" & voutput;
 
 end arch;
