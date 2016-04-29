@@ -1,3 +1,10 @@
+-- Btrace 448
+-- Math
+-- -Square root
+--
+-- Bradley Boccuzzi
+-- 2016
+
 library ieee;
 library ieee_proposed;
 use ieee_proposed.fixed_pkg.all;

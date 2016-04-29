@@ -72,6 +72,8 @@ begin
 
 	-- Output interface (VGA sync + pixel buffer & overlay)
 	-- Use correct signalling from output interface and not vga_sync
+	out_interface: entity work.outputInteface port map(clk, rst, p_tick, s_pixel_x, s_pixel_y, s_frame_buf_rgb, "000000000000", hsync, vsync, RGB);
+
 	out_interface: entity work.outputInteface port map(clk, rst, hsync?, vsync?, video_on?, p_tick, pixel_x, pixel_y);
 
 	-- Frame buffer
