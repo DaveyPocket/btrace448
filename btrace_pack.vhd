@@ -5,6 +5,7 @@ use ieee.std_logic_1164.all;
 
 package btrace_pack is
 	type color_t is (black, red, green, yellow, blue, magenta, cyan, white);
+	type comp_op is (gt, gte, eq);
 	type point is
 		record
 			-- Point coordinates, three dimensions
