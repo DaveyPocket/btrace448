@@ -19,16 +19,19 @@ entity datapath is
 		table_sel: in std_logic_vector(1 downto 0);
 
 		-- Datapath outputs (status)
-		last_obj, obj_hit, p_tick_out: out std_logic;
+		last_obj, obj_hit, p_tick_out, done: out std_logic;
 
 		-- External devices (MCU)
 		e_num_obj: in std_logic_vector(7 downto 0);
-		e_set_cam, e_set_max: in std_logic;
+		e_set_cam, e_set_max, e_set_x, e_set_y: in std_logic;
 
 		-- RGB interface
 		-- TODO: Move output interface external to datapath, to help with debugging and testing...
 		RGB: out std_logic_vector(11 downto 0);
-		hsync, vsync: out std_logic);
+		hsync, vsync: std_logic;
+
+		-- For debugging, LEAVE OPEN on top level...
+		px_x, px_y: out std_logic_vector(9 downto 0));
 end datapath;
 
 architecture arch of datapath is
