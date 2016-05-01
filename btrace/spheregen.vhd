@@ -12,6 +12,9 @@ entity sphere_gen is
 		direction: in vector;
 		origin: in point;
 		in_object: in object_t;
+		sqrt_result: out std_logic_vector((int+frac)-1 downto 0);
+
+	-- Status
 		obj_hit: out std_logic);
 end sphere_gen;
 
@@ -43,9 +46,14 @@ begin
 	mulb <= mul2(47 downto 32) & mul2(31 downto 16);
 	qq <= qmul(47 downto 32) & qmul(31 downto 16);
 
+	-- Discriminant, good
 	disc <= qq - mulb + mula;
+	-- Object hit if discriminant is positive
 	obj_hit <= '1' when disc(31) = '0' else '0';
+
 	-- Square root unit
+	sqrt: entity work.squareroot port map(clk, disc, sqrt_result);
+	
 end arch;
 
 -- Attributes of sphere needed
