@@ -52,11 +52,12 @@ architecture test_bench of datapath_TB is
 	--type micro_program_t is array(0 to 1023) of std_logic_vector(13 downto 0); -- Size of this
 	--signal micro_program: micro_program_t;
 	signal mp_addr: std_logic_vector(9 downto 0) := (others => '0');
-	signal n_s: std_logic_vector(3 downto 0);
+	signal n_s, nn_s: std_logic_vector(3 downto 0);
 	signal mp_control: std_logic_vector(10 downto 0);
 begin
 	uut: entity work.datapath port map(clk, rst, next_obj, clr_obj_count, clr_z_reg, en_z_reg, clr_x, clr_y, inc_x, inc_y, z_to_buf, table_sel, last_obj, obj_hit, p_tick_out, done, e_num_obj, e_set_cam, e_set_max, e_set_x, e_set_y, open, open, open, RGB, px_x, px_y);
-	mp: entity work.microprogram port map(mp_addr, n_s, mp_control);
+	mp: entity work.microprogram port map(mp_addr, nn_s, mp_control);
+	statereg: entity work.reg generic map (4) port map(clk, rst, '1', '0', nn_s, n_s);
 
 	clkProc: process
 	begin
@@ -91,25 +92,17 @@ begin
 		wait until clk = '0'; -- Change stimuli on falling edge, active on rising edge
 
 		while done /= '1' loop
-			wait until (clk'event and clk = '0'); -- Change stimuli on the falling edge of the clock.
+			 -- Change stimuli on the falling edge of the clock.
 
 			-- Controller outputs (Datapath control)
-			table_sel <= "00";--mp_control(0);
-			z_to_buf <= mp_control(1);
-			inc_y <= mp_control(2);
-			inc_x <= mp_control(3);
-			clr_y <= mp_control(4);
-			clr_x <= mp_control(5);
-			en_z_reg <= mp_control(6);
-			clr_z_reg <= mp_control(7);
-			clr_obj_count <= mp_control(8);
-			next_obj <= mp_control(9);
-			--done <= mp_control(10);
+			
+			--	done <= mp_control(10);
 			-- Microprogram sets 'done' output to signal external microcontroller/machine
 			-- Datapath should have a 'last_pixel' signal rather than a done signal.
 			
 			-- Controller inputs (Next state and datapath status)
-			mp_addr <= n_s & last_obj & obj_hit & p_tick_out & done & "00";
+			wait until (clk'event and clk = '0');
+		
 
 			if z_to_buf = '1' then 
 				write(reportLine, RGB);
@@ -119,4 +112,15 @@ begin
 		report "Done testing." severity note;
 		wait;
 	end process testProc;
+	table_sel <= "00";--mp_control(0);
+	z_to_buf <= mp_control(1);
+	inc_y <= mp_control(2);
+	inc_x <= mp_control(3);
+	clr_y <= mp_control(4);
+	clr_x <= mp_control(5);
+	en_z_reg <= mp_control(6);
+	clr_z_reg <= mp_control(7);
+	clr_obj_count <= mp_control(8);
+	next_obj <= mp_control(9);
+	mp_addr <= n_s & "001" & obj_hit & last_obj & p_tick_out;
 end test_bench;

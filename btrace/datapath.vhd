@@ -26,7 +26,6 @@ entity datapath is
 		e_set_cam, e_set_max, e_set_x, e_set_y: in std_logic;
 
 		-- RGB interface
-		-- TODO: Move output interface external to datapath, to help with debugging and testing...
 		RGB: out std_logic_vector(11 downto 0);
 		hsync, vsync: out std_logic;
 

@@ -4,10 +4,10 @@ use ieee.std_logic_1164.all;
 entity sphere_gen is
 	generic(int, frac: integer := 16);
 	port(clk, rst: in std_logic;
-		ray: in (vector_type?);
+		ray: in point;
 		origin: in (point_type?);
 		radius: in std_logic_vector((int+frac)-1 downto 0);
-		shade: in (shade_type?);
+		shade: in ;
 		);
 end sphere_gen;
 
@@ -22,6 +22,8 @@ end sphere_gen;
 -- direction vector (no unit vector)
 
 architecture arch of sphere_gen is
-
+	constant pointsize: integer := int+frac;
+	constant colordepth: integer := 12;
+	constant objecttype: integer := 1;
 begin
 end arch;
