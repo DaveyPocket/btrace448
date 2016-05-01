@@ -12,10 +12,10 @@ entity object_table is
 		isize: in std_logic_vector((int+frac)-1 downto 0);
 		icolor: in std_logic_vector(11 downto 0);
 		io_type: in std_logic;
-		op_x, op_y, op_z: on std_logic_vector((int+frac)-1 downto 0);
-		osize: on std_logic_vector((int+frac)-1 downto 0);
-		ocolor: on std_logic_vector(11 downto 0);
-		oo_type: on std_logic);
+		op_x, op_y, op_z: in std_logic_vector((int+frac)-1 downto 0);
+		osize: in std_logic_vector((int+frac)-1 downto 0);
+		ocolor: in std_logic_vector(11 downto 0);
+		oo_type: in std_logic);
 end object_table;
 
 architecture arch of object_table is

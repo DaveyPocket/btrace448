@@ -20,18 +20,18 @@ architecture arch_unsigned of compare is
 	signal comparison: boolean;
 begin
 	with op select
-		comparison <= unsigned(su_A) > unsigned(su_B) when gt,
-					  unsigned(su_A) >= unsigned(su_B) when gte,
-					  unsigned(su_A) = unsigned(su_B) when others;
+		comparison <= unsigned(a) > unsigned(b) when gt,
+					  unsigned(a) >= unsigned(b) when gte,
+					  unsigned(a) = unsigned(b) when others;
 	c <= '1' when comparison = true else '0';
-end arch;
+end arch_unsigned;
 
 architecture arch_signed of compare is
 	signal comparison: boolean;
 begin
 	with op select
-		comparison <= signed(su_A) > signed(su_B) when gt,
-					  signed(su_A) >= signed(su_B) when gte,
-					  signed(su_A) = signed(su_B) when others;
+		comparison <= signed(a) > signed(b) when gt,
+					  signed(a) >= signed(b) when gte,
+					  signed(a) = signed(b) when others;
 	c <= '1' when comparison = true else '0';
-end arch;
+end arch_signed;

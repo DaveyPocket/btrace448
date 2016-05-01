@@ -14,18 +14,16 @@ end buf;
 architecture arch of buf is
 	type ram_t is array(0 to (2**N)-1) of std_logic_vector(11 downto 0);
 	signal ram: ram_t;	-- Uninitialized!
-	signal intAddr: integer;
 	signal addrReg: std_logic_vector(N-1 downto 0);
 begin
-	intAddr <= to_integer(unsigned(addrReg));
 
-	Dout <= ram(intAddr);
+	Dout <= ram(to_integer(unsigned(addrReg)));
 	process(clk)
 	begin
 		if rising_edge(clk) then
 			addrReg <= Addr;-- Inferring BRAM.........
 			if (en = '1') then
-				ram(intAddr) <= Din;
+				ram(to_integer(unsigned(addrReg))) <= Din;
 			end if;
 		end if;
 	end process;

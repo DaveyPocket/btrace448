@@ -28,9 +28,10 @@ entity datapath is
 		-- RGB interface
 		-- TODO: Move output interface external to datapath, to help with debugging and testing...
 		RGB: out std_logic_vector(11 downto 0);
-		hsync, vsync: std_logic;
+		hsync, vsync: out std_logic;
 
 		-- For debugging, LEAVE OPEN on top level...
+		d_rgb: out std_logic_vector(11 downto 0);
 		px_x, px_y: out std_logic_vector(9 downto 0));
 end datapath;
 
@@ -38,7 +39,7 @@ architecture arch of datapath is
 	-- Bus width constants
 	constant w_t_val: integer := 10;
 	constant w_int, w_frac: integer := 16;
-	constant w_data: integer := ?;
+	constant w_data: integer := 9;
 	constant w_obj_tab: integer := 8;
 
 	-- Internal datapath signals
@@ -51,7 +52,15 @@ architecture arch of datapath is
 
 	-- VGA sync/output interface
 	signal p_tick: std_logic;
+	-- (TODO - REMOVE, TEMPORARY)
+	signal e_obj_addr: std_logic_vector(7 downto 0) := (others => '0');
 begin
+	-- TEMPORARY
+	obj_hit <= '1';
+	--Not using done, using last_x and last_y from comparators and registers
+	--TEMPORARY
+	done <= '0';
+
 	-- Object counter
 	obj_counter: entity work.counter generic map(w_obj_tab) port map(clk, rst, clr_obj_count, next_obj, '0', x"00", s_obj_num);
 
@@ -66,7 +75,8 @@ begin
 
 	-- Ray generator
 	--
-	ray_generator: entity work.raygen generic map(w_int, w_frac) port map(clk, rst, e_set_cam, inc_x, inc_y, clr_x, clr_y, mv_x?, mv_y?, mv_z?, gen_px, gen_py);
+	--ray_generator: entity work.raygen generic map(w_int, w_frac) port map(clk, rst, e_set_cam, inc_x, inc_y, clr_x, clr_y, mv_x?, mv_y?, mv_z?, gen_px, gen_py);
+	ray_generator: entity work.raygen generic map(w_int, w_frac) port map(clk, rst, e_set_cam, inc_x, inc_y, clr_x, clr_y, open, open, open, s_gen_px, s_gen_py);
 
 
 	-- Depth (Z) register
@@ -76,22 +86,21 @@ begin
 	obj_prox_reg: entity work.reg generic map(w_obj_tab) port map(clk, rst, s_store, '0', s_obj_num, s_obj_sel);
 
 	-- Z-register comparator
-	-- TODO Need signed comparison
 	z_compare: entity work.compare(arch_signed) generic map(w_t_val, gte) port map(s_z_reg_out, s_t_val, s_compare_t);
 
 	-- Output interface (VGA sync + pixel buffer & overlay)
 	-- Use correct signalling from output interface and not vga_sync
-	out_interface: entity work.outputInteface port map(clk, rst, p_tick, s_pixel_x, s_pixel_y, s_frame_buf_rgb, "000000000000", hsync, vsync, RGB);
-
+	out_interface: entity work.outputInterface port map(clk, rst, p_tick, s_pixel_x, s_pixel_y, s_frame_buf_rgb, x"000", '0', hsync, vsync, RGB);
 
 	-- Frame buffer
 	-- TODO Adjust 
 	-- Address selection inside of frame buffer
-	frame_buffer: entity work.frame_buf generic map(9, 8) port map(clk, s_arbitrate, ?from_shader?, s_frame_buf_rgb, s_addr_buf_x, s_addr_buf_y);
+	--frame_buffer: entity work.frame_buf generic map(9, 8) port map(clk, s_arbitrate, ?from_shader?, s_frame_buf_rgb, s_addr_buf_x, s_addr_buf_y);
+	frame_buffer: entity work.frame_buf generic map(9, 8) port map(clk, s_arbitrate, x"000", s_frame_buf_rgb, s_addr_buf_x(8 downto 0), s_addr_buf_y(7 downto 0));
 
 
 --- Combinational logic
-	s_store <= en_zreg and s_compare_t?;
+	s_store <= en_z_reg and s_compare_t;
 
 	-- Frame buffer address arbiters
 	s_addr_buf_x <= s_gen_px when p_tick = '0' else s_pixel_x;
