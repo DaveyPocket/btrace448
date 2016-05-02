@@ -78,7 +78,7 @@ begin
 	-- Ray generator
 	--
 	--ray_generator: entity work.raygen generic map(w_int, w_frac) port map(clk, rst, e_set_cam, inc_x, inc_y, clr_x, clr_y, mv_x?, mv_y?, mv_z?, gen_px, gen_py);
-	ray_generator: entity work.raygen generic map(w_int, w_frac) port map(clk, rst, e_set_cam, inc_x, inc_y, clr_x, clr_y, direction, origin, s_gen_px, s_gen_py);
+	ray_generator: entity work.raygenn generic map(w_int, w_frac) port map(clk, rst, e_set_cam, inc_x, inc_y, clr_x, clr_y, direction, origin, s_gen_px, s_gen_py);
 
 	-- Sphere generator
 	sphere_generator: entity work.sphere_gen generic map(w_int, w_frac) port map(clk, rst, direction, origin, myObject, s_t_val);

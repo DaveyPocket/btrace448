@@ -5,12 +5,13 @@
 -- 2016
 
 library ieee;
-library ieee_proposed.all;
+library ieee_proposed;
 use ieee.std_logic_1164.all;
 use ieee_proposed.fixed_pkg.all;
+use ieee.std_logic_unsigned.all;
 use work.btrace_pack.all;
 
-entity raygen is
+entity raygenn is
 	generic(int, fraction: integer := 16);
 	port(clk, rst: in std_logic;
 		set_cam: in std_logic;
@@ -21,9 +22,9 @@ entity raygen is
 		--mv_x, mv_y, mv_z: out std_logic_vector((int+fraction)-1 downto 0);
 		--	TODO: remove fudge values for below pixel x and y coordinates
 		p_x, p_y: out std_logic_vector(9 downto 0));
-end raygen;
+end raygenn;
 
-architecture arch of raygen is
+architecture arch of raygenn is
 	--- Constant declarations
 	-- Integers
 	constant hsize: integer := 9;
@@ -48,6 +49,7 @@ architecture arch of raygen is
 
 	-- TODO fix this
 	signal vector_z: std_logic_vector(31 downto 0);
+	signal vvx, vvy: std_logic_vector(31 downto 0);
 begin
 	--
 	--- Component instantiation
@@ -65,6 +67,7 @@ begin
 	--- Subtractors
 	-- Horizontal coordinate subractor ()
 	subx: entity work.sub generic map(hsize_cat) port map(hout_cat, std_logic_vector(camera_reg_out.x), vector_x);
+
 	-- Vertical coordinate subtractor ()
 	suby: entity work.sub generic map(vsize_cat) port map(vout_cat, std_logic_vector(camera_reg_out.y), vector_y);
 
@@ -78,11 +81,13 @@ begin
 	hout_cat <= "0000000"&houtput&x"0000";
 	-- vout_cat (Concatenates 'integer' voutput with zero fractional portion)
 	vout_cat <= "00000000"&voutput&x"0000";
-	direction.mv_x <= vector_x;
-	direction.mv_y <= vector_y;
-	direction.mv_z <= vector_z;
-	origin.x <= "0000000" & ("010100000" - houtput) & x"0000";
-	origin.y <= x"00" & (x"F0" - voutput) & x"0000";
+	vvx <= "0000000"&vector_x&x"0000";
+	vvy <= "00000000"&vector_y&x"0000";
+	direction.m_x <= to_ufixed(vvx, 15, -16);
+	direction.m_y <= to_ufixed(vvy, 15, -16);
+	direction.m_z <= x"00000000";
+	origin.x <= to_ufixed(hout_cat, 15, -16);
+	origin.y <= to_ufixed(vout_cat, 15, -16);
 	origin.z <= x"00000000";
 
 	-- Pixel coordinates

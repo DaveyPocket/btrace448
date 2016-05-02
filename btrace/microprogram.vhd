@@ -12,8 +12,8 @@ architecture arch of microprogram is
 	constant num_things: integer := 5;
 	type mp_t is array(0 to num_things-1) of std_logic_vector(9 downto 0);
 	signal is_match: std_logic_vector(num_things-1 downto 0);
-	constant mp: mp_t := ("0000--0---",
-									"0000--1---");
+	--constant mp: mp_t := ("0000--0---",
+									--"0000--1---");
 begin
 	match_gen: for i in mp(9 downto 0)'range generate
 		is_match(i) <= '1' when std_match(addr, mp(i)) else '0';
