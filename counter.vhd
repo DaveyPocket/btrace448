@@ -14,7 +14,7 @@ entity counter is
 	port(clk, reset: in std_logic;
 		ld, up, down: in std_logic;
 		d: in std_logic_vector(n-1 downto 0);
-		q: out std_logic_vector(n-1 downto 0));
+		q: out std_logic_vector(n-1 downto 0) := (others => '0'));
 end counter;
 
 architecture arch of counter is

@@ -20,7 +20,7 @@ type screen struct {
 func main() {
 	var err error
 	var resultColor color.Color
-	testBenchInput, err := os.Open("results.resl")
+	testBenchInput, err := os.Open("../xilinx/results.resl")
 	if err != nil {
 		panic(err)
 	}

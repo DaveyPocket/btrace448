@@ -21,7 +21,8 @@ entity raygenn is
 		origin: out point;
 		--mv_x, mv_y, mv_z: out std_logic_vector((int+fraction)-1 downto 0);
 		--	TODO: remove fudge values for below pixel x and y coordinates
-		p_x, p_y: out std_logic_vector(9 downto 0));
+		p_x, p_y: out std_logic_vector(9 downto 0);
+		last_x, last_y: out std_logic);
 end raygenn;
 
 architecture arch of raygenn is
@@ -33,7 +34,7 @@ architecture arch of raygenn is
 	constant vsize_cat: integer := 32;
 
 	-- Other types
-	constant camera_point: point := (x"00100000", x"00100000", x"FFFF0000");
+	constant camera_point: point := (x"00000000", x"00000000", x"FF000000");
 	constant h_init: std_logic_vector(hsize-1 downto 0) := (others => '0');
 	constant v_init: std_logic_vector(vsize-1 downto 0) := (others => '0');
 
@@ -50,6 +51,8 @@ architecture arch of raygenn is
 	-- TODO fix this
 	signal vector_z: std_logic_vector(31 downto 0);
 	signal vvx, vvy: std_logic_vector(31 downto 0);
+	constant zeros: ufixed(15 downto -16) := (others => '0');
+	signal sub16: ufixed(16 downto -16) := (others => '0');
 begin
 	--
 	--- Component instantiation
@@ -83,7 +86,11 @@ begin
 	vout_cat <= "00000000"&voutput&x"0000";
 	direction.m_x <= to_ufixed(vector_x, 15, -16);
 	direction.m_y <= to_ufixed(vector_y, 15, -16);
-	direction.m_z <= x"00000000";
+	sub16 <= zeros - camera_point.z;
+	direction.m_z <= sub16(15 downto -16);
+	-- Unbounded issue below
+	--origin.x <= "010100000" - to_ufixed(hout_cat, 15, -16);
+	--origin.y <= "01111000" - to_ufixed(vout_cat, 15, -16);
 	origin.x <= to_ufixed(hout_cat, 15, -16);
 	origin.y <= to_ufixed(vout_cat, 15, -16);
 	origin.z <= x"00000000";
@@ -91,5 +98,8 @@ begin
 	-- Pixel coordinates
 	p_x <= '0' & houtput;
 	p_y <= "00" & voutput;
+
+	last_x <= '1' when houtput = "101000000" else '0';
+	last_y <= '1' when voutput = x"F0" else '0';
 
 end arch;

@@ -21,7 +21,7 @@ end sphere_gen;
 architecture arch of sphere_gen is
 	signal v: vector;
 	signal m_xc, m_yc, m_zc: ufixed(16 downto -16);
-	signal dd, q, qq, vv, b, mula, mulb, result, disc: std_logic_vector((int+frac)-1 downto 0);
+	signal dd, q, qq, vv, b, mula, mulb, disc: std_logic_vector((int+frac)-1 downto 0);
 	signal mul1, mul2, qmul: std_logic_vector((2*(int+frac))-1 downto 0);
 begin
 	m_xc <= origin.x - in_object.position.x;

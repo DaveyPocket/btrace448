@@ -7,6 +7,8 @@
 -- 2016
 
 library ieee;
+library ieee_proposed;
+use ieee_proposed.fixed_pkg.all;
 use ieee.std_logic_1164.all;
 --use ieee.std_logic_unsigned.all;
 use ieee.numeric_std.all;
@@ -31,7 +33,7 @@ architecture test_bench of datapath_TB is
 	signal controlInputs: std_logic_vector(3 downto 0) := (others => '0');
 
 	-- Datapath outputs (status)
-	signal last_obj, obj_hit, p_tick_out: std_logic;
+	signal last_obj, obj_hit, p_tick_out, last_x, last_y: std_logic;
 	signal RGB: std_logic_vector(11 downto 0);
 	signal px_x, px_y: std_logic_vector(9 downto 0);
 
@@ -39,6 +41,7 @@ architecture test_bench of datapath_TB is
 	signal done: std_logic;
 
 	-- External devices (MCU)
+	signal start: std_logic := '0';
 	signal e_num_obj: std_logic_vector(7 downto 0) := (others => 'L');
 	signal e_set_cam, e_set_max, e_set_x, e_set_y: std_logic := '0';
 
@@ -46,15 +49,13 @@ architecture test_bench of datapath_TB is
 
 	type states_t is (s_idle, s_clear, s_compute, s_cycle, s_wait, s_clear_z_reg);
 	signal controller_state: states_t := s_idle;
-	signal next_state:
 
 	-- Test bench
 	constant clkPd: time := 20 ns;
 	--file testStimFile: text open read_mode is "microprogram.prog"
 	file testResults: text open write_mode is "results.resl";
 begin
-	uut: entity work.datapath port map(clk, rst, next_obj, clr_obj_count, clr_z_reg, en_z_reg, clr_x, clr_y, inc_x, inc_y, z_to_buf, table_sel, last_obj, obj_hit, p_tick_out, done, e_num_obj, e_set_cam, e_set_max, e_set_x, e_set_y, open, open, open, RGB, px_x, px_y);
-	statereg: entity work.reg generic map (4) port map(clk, rst, '1', '0', nn_s, n_s);
+	uut: entity work.datapath port map(clk, rst, next_obj, clr_obj_count, clr_z_reg, en_z_reg, clr_x, clr_y, inc_x, inc_y, z_to_buf, table_sel, last_obj, obj_hit, p_tick_out, last_x, last_y, e_num_obj, e_set_cam, e_set_max, e_set_x, e_set_y, open, open, open, RGB, px_x, px_y);
 
 	clkProc: process
 	begin
@@ -74,6 +75,8 @@ begin
 					if start = '1' then
 						controller_state <= s_clear;
 					end if;
+				when s_compute =>
+					controller_state <= s_cycle;
 				when s_clear =>
 					if obj_hit = '1' then
 						controller_state <= s_compute;
@@ -124,9 +127,18 @@ begin
 		-- Index n corresponds to a address of micro program
 		variable n: integer := 0;
 	begin
+		wait for clkPd/3;
 		rst <= '1';
-		wait for 5*clkPd;
+		wait for clkPd;
 		rst <= '0';
+		e_num_obj <= x"01";
+		e_set_max <= '1';
+		e_set_cam <= '1';
+		wait for clkPd;
+		e_set_cam <= '0';
+		e_set_max <= '0';
+		wait for 10*clkPd;
+		start <= '1';
 		wait for 2*clkPd;
 
 		-- Begin test bench
@@ -163,12 +175,13 @@ begin
 				 "10" when ((controller_state = s_cycle) and last_obj = '1') or (controller_state = s_wait) else
 				 "11";
 	z_to_buf <= '1' when (controller_state = s_wait) or ((controller_state = s_cycle) and last_obj = '1') else '0';
-	inc_y <= '1' when (controller_state = s_clear) or ((controller_state = s_clear_z_reg) and (last_x = '1') and (last_y = '1')) else '0';
-	inc_x <= '1' when (controller_state = s_clear) or ((controller_state = s_clear_z_reg) and (last_x = '0')) else '0';
+	inc_y <= '1' when ((controller_state = s_clear_z_reg) and (last_x = '1') and (last_y = '0')) else '0';
+	inc_x <= '1' when ((controller_state = s_clear_z_reg) and (last_x = '0')) else '0';
 	clr_y <= '1' when (controller_state = s_clear) else '0';
-	clr_x <= '1' when ((controller_state = s_clear_z_reg) and (last_x = '1') and (last_y = '1')) else '0';
+	clr_x <= '1' when ((controller_state = s_clear_z_reg) and ((last_x = '1') or (last_y = '1'))) else '0';
 	en_z_reg <= '1' when (controller_state = s_compute) else '0';
 	clr_z_reg <= '1' when (controller_state = s_clear_z_reg) or (controller_state = s_clear) else '0';
-	clr_obj_count <= '1' when (controller_state = s_clear) else '0';
+	clr_obj_count <= '1' when (controller_state = s_clear) or (controller_state = s_clear_z_reg) else '0';
 	next_obj <= '1' when (controller_state = s_cycle) else '0';
+	done <= '1' when (controller_state = s_idle) else '0';
 end test_bench;

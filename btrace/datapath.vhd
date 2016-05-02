@@ -19,7 +19,7 @@ entity datapath is
 		table_sel: in std_logic_vector(1 downto 0);
 
 		-- Datapath outputs (status)
-		last_obj, obj_hit, p_tick_out, done: out std_logic;
+		last_obj, obj_hit, p_tick_out, last_x, last_y: out std_logic;
 
 		-- External devices (MCU)
 		e_num_obj: in std_logic_vector(7 downto 0);
@@ -48,7 +48,8 @@ architecture arch of datapath is
 	signal s_gen_px, s_gen_py, s_pixel_x, s_pixel_y, s_addr_buf_x, s_addr_buf_y: std_logic_vector(9 downto 0);
 	signal s_frame_buf_rgb: std_logic_vector(11 downto 0);
 	signal s_arbitrate: std_logic;
-	constant myObject: object_t := ((x"00000000", x"00000000", x"00100000"), x"00040000", red, '0');
+	constant myObject: object_t := ((x"00000000", x"00000000", x"0F000000"), x"0F000000", red, '0');
+	signal hit_something: std_logic_vector(1 downto 0);
 
 	-- VGA sync/output interface
 	signal p_tick: std_logic;
@@ -57,12 +58,6 @@ architecture arch of datapath is
 	signal direction: vector;
 	signal origin: point;
 begin
-	-- TEMPORARY
-	obj_hit <= '1';
-	--Not using done, using last_x and last_y from comparators and registers
-	--TEMPORARY
-	done <= '0';
-
 	-- Object counter
 	obj_counter: entity work.counter generic map(w_obj_tab) port map(clk, rst, clr_obj_count, next_obj, '0', x"00", s_obj_num);
 
@@ -78,10 +73,10 @@ begin
 	-- Ray generator
 	--
 	--ray_generator: entity work.raygen generic map(w_int, w_frac) port map(clk, rst, e_set_cam, inc_x, inc_y, clr_x, clr_y, mv_x?, mv_y?, mv_z?, gen_px, gen_py);
-	ray_generator: entity work.raygenn generic map(w_int, w_frac) port map(clk, rst, e_set_cam, inc_x, inc_y, clr_x, clr_y, direction, origin, s_gen_px, s_gen_py);
+	ray_generator: entity work.raygenn generic map(w_int, w_frac) port map(clk, rst, e_set_cam, inc_x, inc_y, clr_x, clr_y, direction, origin, s_gen_px, s_gen_py, last_x, last_y);
 
 	-- Sphere generator
-	sphere_generator: entity work.sphere_gen generic map(w_int, w_frac) port map(clk, rst, direction, origin, myObject, s_t_val);
+	sphere_generator: entity work.sphere_gen generic map(w_int, w_frac) port map(clk, rst, direction, origin, myObject, s_t_val, obj_hit);
 
 
 	-- Depth (Z) register
@@ -123,4 +118,7 @@ begin
 					  s_obj_num when "01",
 					  s_obj_sel when others;
 
+	d_rgb <= x"FFF" when hit_something = "11" else x"000";
+
+	hit_s: entity work.reg generic map (2) port map (clk, rst, en_z_reg, clr_z_reg, "11", hit_something);
 end arch;
