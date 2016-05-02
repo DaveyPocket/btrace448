@@ -36,7 +36,7 @@ end datapath;
 
 architecture arch of datapath is
 	-- Bus width constants
-	constant w_t_val: integer := 10;
+	constant w_t_val: integer := 32;
 	constant w_int, w_frac: integer := 16;
 	constant w_data: integer := 9;
 	constant w_obj_tab: integer := 8;
@@ -48,11 +48,14 @@ architecture arch of datapath is
 	signal s_gen_px, s_gen_py, s_pixel_x, s_pixel_y, s_addr_buf_x, s_addr_buf_y: std_logic_vector(9 downto 0);
 	signal s_frame_buf_rgb: std_logic_vector(11 downto 0);
 	signal s_arbitrate: std_logic;
+	constant myObject: object_t := ((x"00000000", x"00000000", x"00100000"), x"00040000", red, '0');
 
 	-- VGA sync/output interface
 	signal p_tick: std_logic;
 	-- (TODO - REMOVE, TEMPORARY)
 	signal e_obj_addr: std_logic_vector(7 downto 0) := (others => '0');
+	signal direction: vector;
+	signal origin: point;
 begin
 	-- TEMPORARY
 	obj_hit <= '1';
@@ -75,7 +78,10 @@ begin
 	-- Ray generator
 	--
 	--ray_generator: entity work.raygen generic map(w_int, w_frac) port map(clk, rst, e_set_cam, inc_x, inc_y, clr_x, clr_y, mv_x?, mv_y?, mv_z?, gen_px, gen_py);
-	ray_generator: entity work.raygen generic map(w_int, w_frac) port map(clk, rst, e_set_cam, inc_x, inc_y, clr_x, clr_y, open, open, open, s_gen_px, s_gen_py);
+	ray_generator: entity work.raygen generic map(w_int, w_frac) port map(clk, rst, e_set_cam, inc_x, inc_y, clr_x, clr_y, direction, origin, s_gen_px, s_gen_py);
+
+	-- Sphere generator
+	sphere_generator: entity work.sphere_gen generic map(w_int, w_frac) port map(clk, rst, direction, origin, myObject, s_t_val);
 
 
 	-- Depth (Z) register

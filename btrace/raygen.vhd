@@ -5,7 +5,9 @@
 -- 2016
 
 library ieee;
+library ieee_proposed.all;
 use ieee.std_logic_1164.all;
+use ieee_proposed.fixed_pkg.all;
 use work.btrace_pack.all;
 
 entity raygen is
@@ -14,7 +16,9 @@ entity raygen is
 		set_cam: in std_logic;
 		inc_x, inc_y: in std_logic;
 		clr_x, clr_y: in std_logic;
-		mv_x, mv_y, mv_z: out std_logic_vector((int+fraction)-1 downto 0);
+		direction: out vector;
+		origin: out point;
+		--mv_x, mv_y, mv_z: out std_logic_vector((int+fraction)-1 downto 0);
 		--	TODO: remove fudge values for below pixel x and y coordinates
 		p_x, p_y: out std_logic_vector(9 downto 0));
 end raygen;
@@ -74,9 +78,12 @@ begin
 	hout_cat <= "0000000"&houtput&x"0000";
 	-- vout_cat (Concatenates 'integer' voutput with zero fractional portion)
 	vout_cat <= "00000000"&voutput&x"0000";
-	mv_x <= vector_x;
-	mv_y <= vector_y;
-	mv_z <= vector_z;
+	direction.mv_x <= vector_x;
+	direction.mv_y <= vector_y;
+	direction.mv_z <= vector_z;
+	origin.x <= "0000000" & ("010100000" - houtput) & x"0000";
+	origin.y <= x"00" & (x"F0" - voutput) & x"0000";
+	origin.z <= x"00000000";
 
 	-- Pixel coordinates
 	p_x <= '0' & houtput;
