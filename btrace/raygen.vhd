@@ -81,10 +81,8 @@ begin
 	hout_cat <= "0000000"&houtput&x"0000";
 	-- vout_cat (Concatenates 'integer' voutput with zero fractional portion)
 	vout_cat <= "00000000"&voutput&x"0000";
-	vvx <= "0000000"&vector_x&x"0000";
-	vvy <= "00000000"&vector_y&x"0000";
-	direction.m_x <= to_ufixed(vvx, 15, -16);
-	direction.m_y <= to_ufixed(vvy, 15, -16);
+	direction.m_x <= to_ufixed(vector_x, 15, -16);
+	direction.m_y <= to_ufixed(vector_y, 15, -16);
 	direction.m_z <= x"00000000";
 	origin.x <= to_ufixed(hout_cat, 15, -16);
 	origin.y <= to_ufixed(vout_cat, 15, -16);
