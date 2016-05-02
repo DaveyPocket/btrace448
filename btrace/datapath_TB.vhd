@@ -42,21 +42,18 @@ architecture test_bench of datapath_TB is
 	signal e_num_obj: std_logic_vector(7 downto 0) := (others => 'L');
 	signal e_set_cam, e_set_max, e_set_x, e_set_y: std_logic := '0';
 
+	-- Controller states
+
+	type states_t is (s_idle, s_clear, s_compute, s_cycle, s_wait, s_clear_z_reg);
+	signal controller_state: states_t := s_idle;
+	signal next_state:
 
 	-- Test bench
 	constant clkPd: time := 20 ns;
 	--file testStimFile: text open read_mode is "microprogram.prog"
 	file testResults: text open write_mode is "results.resl";
-
-	-- Controller simulation
-	--type micro_program_t is array(0 to 1023) of std_logic_vector(13 downto 0); -- Size of this
-	--signal micro_program: micro_program_t;
-	signal mp_addr: std_logic_vector(9 downto 0) := (others => '0');
-	signal n_s, nn_s: std_logic_vector(3 downto 0);
-	signal mp_control: std_logic_vector(10 downto 0);
 begin
 	uut: entity work.datapath port map(clk, rst, next_obj, clr_obj_count, clr_z_reg, en_z_reg, clr_x, clr_y, inc_x, inc_y, z_to_buf, table_sel, last_obj, obj_hit, p_tick_out, done, e_num_obj, e_set_cam, e_set_max, e_set_x, e_set_y, open, open, open, RGB, px_x, px_y);
-	mp: entity work.microprogram port map(mp_addr, nn_s, mp_control);
 	statereg: entity work.reg generic map (4) port map(clk, rst, '1', '0', nn_s, n_s);
 
 	clkProc: process
@@ -66,6 +63,57 @@ begin
 		clk <= '0';
 		wait for clkPd/2;
 	end process clkProc;
+
+	process(clk, rst)
+	begin
+		if rst = '1' then
+			controller_state <= s_idle;
+		elsif rising_edge(clk) then
+			case controller_state is
+				when s_idle =>
+					if start = '1' then
+						controller_state <= s_clear;
+					end if;
+				when s_clear =>
+					if obj_hit = '1' then
+						controller_state <= s_compute;
+					else
+						controller_state <= s_cycle;
+					end if;
+				when s_wait =>
+					if p_tick_out = '1' then
+						controller_state <= s_wait;
+					else
+						controller_state <= s_clear_z_reg;
+					end if;
+				when s_clear_z_reg =>
+					if (last_y and last_x) = '1' then
+						controller_state <= s_idle;
+					else
+						if obj_hit = '1' then
+							controller_state <= s_compute;
+						else
+							controller_state <= s_cycle;
+						end if;
+					end if;
+				when others =>
+					if last_obj = '0' then
+						if obj_hit = '1' then
+							controller_state <= s_compute;
+						else
+							controller_state <= s_cycle;
+						end if;
+					else
+						if p_tick_out = '1' then
+							controller_state <= s_wait;
+						else
+							controller_state <= s_clear_z_reg;
+						end if;
+					end if;
+			end case;
+
+		end if;
+	end process;
 
 	testProc: process
 		variable stimLine: line;
@@ -79,7 +127,7 @@ begin
 		rst <= '1';
 		wait for 5*clkPd;
 		rst <= '0';
-		wait for 5*clkPd;
+		wait for 2*clkPd;
 
 		-- Begin test bench
 		--while not(endfile(testStimFile)) loop
@@ -102,8 +150,6 @@ begin
 			
 			-- Controller inputs (Next state and datapath status)
 			wait until (clk'event and clk = '0');
-		
-
 			if z_to_buf = '1' then 
 				write(reportLine, RGB);
 				writeLine(testResults, reportLine);
@@ -112,15 +158,17 @@ begin
 		report "Done testing." severity note;
 		wait;
 	end process testProc;
-	table_sel <= "00";--mp_control(0);
-	z_to_buf <= mp_control(1);
-	inc_y <= mp_control(2);
-	inc_x <= mp_control(3);
-	clr_y <= mp_control(4);
-	clr_x <= mp_control(5);
-	en_z_reg <= mp_control(6);
-	clr_z_reg <= mp_control(7);
-	clr_obj_count <= mp_control(8);
-	next_obj <= mp_control(9);
-	mp_addr <= n_s & "001" & obj_hit & last_obj & p_tick_out;
+	table_sel <= "00" when controller_state = s_idle else
+				 "01" when (controller_state = s_compute) or ((controller_state = s_cycle) and last_obj = '1') else
+				 "10" when ((controller_state = s_cycle) and last_obj = '1') or (controller_state = s_wait) else
+				 "11";
+	z_to_buf <= '1' when (controller_state = s_wait) or ((controller_state = s_cycle) and last_obj = '1') else '0';
+	inc_y <= '1' when (controller_state = s_clear) or ((controller_state = s_clear_z_reg) and (last_x = '1') and (last_y = '1')) else '0';
+	inc_x <= '1' when (controller_state = s_clear) or ((controller_state = s_clear_z_reg) and (last_x = '0')) else '0';
+	clr_y <= '1' when (controller_state = s_clear) else '0';
+	clr_x <= '1' when ((controller_state = s_clear_z_reg) and (last_x = '1') and (last_y = '1')) else '0';
+	en_z_reg <= '1' when (controller_state = s_compute) else '0';
+	clr_z_reg <= '1' when (controller_state = s_clear_z_reg) or (controller_state = s_clear) else '0';
+	clr_obj_count <= '1' when (controller_state = s_clear) else '0';
+	next_obj <= '1' when (controller_state = s_cycle) else '0';
 end test_bench;
