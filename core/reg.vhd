@@ -25,7 +25,7 @@ begin
 		elsif rising_edge(clk) then
 			if clr = '1' then
 				Q <= zeros;
-			else
+			elsif en = '1' then
 				Q <= D;
 			end if;
 		end if;

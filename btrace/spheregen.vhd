@@ -20,7 +20,7 @@ end sphere_gen;
 
 architecture arch of sphere_gen is
 	signal v: vector;
-	signal m_xc, m_yc, m_zc: ufixed(16 downto -16);
+	signal m_xc, m_yc, m_zc: sfixed(16 downto -16);
 	signal dd, q, qq, vv, b, mula, mulb, disc: std_logic_vector((int+frac)-1 downto 0);
 	signal mul1, mul2, qmul: std_logic_vector((2*(int+frac))-1 downto 0);
 begin
@@ -42,9 +42,9 @@ begin
 	mul1 <= b*dd;
 	mul2 <= vv*dd;
 	qmul <= q*q;
-	mula <= mul1(47 downto 32) & mul1(31 downto 16);
-	mulb <= mul2(47 downto 32) & mul2(31 downto 16);
-	qq <= qmul(47 downto 32) & qmul(31 downto 16);
+	mula <= mul1(50 downto 35) & mul1(35 downto 20);
+	mulb <= mul2(50 downto 35) & mul2(35 downto 20);
+	qq <= qmul(50 downto 35) & qmul(35 downto 20);
 
 	-- Discriminant, good
 	disc <= qq - mulb + mula;

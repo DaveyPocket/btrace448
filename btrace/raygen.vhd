@@ -51,8 +51,8 @@ architecture arch of raygenn is
 	-- TODO fix this
 	signal vector_z: std_logic_vector(31 downto 0);
 	signal vvx, vvy: std_logic_vector(31 downto 0);
-	constant zeros: ufixed(15 downto -16) := (others => '0');
-	signal sub16: ufixed(16 downto -16) := (others => '0');
+	constant zeros: sfixed(15 downto -16) := (others => '0');
+	signal sub16: sfixed(16 downto -16) := (others => '0');
 begin
 	--
 	--- Component instantiation
@@ -84,15 +84,15 @@ begin
 	hout_cat <= "0000000"&houtput&x"0000";
 	-- vout_cat (Concatenates 'integer' voutput with zero fractional portion)
 	vout_cat <= "00000000"&voutput&x"0000";
-	direction.m_x <= to_ufixed(vector_x, 15, -16);
-	direction.m_y <= to_ufixed(vector_y, 15, -16);
+	direction.m_x <= to_sfixed(vector_x, 15, -16);
+	direction.m_y <= to_sfixed(vector_y, 15, -16);
 	sub16 <= zeros - camera_point.z;
 	direction.m_z <= sub16(15 downto -16);
 	-- Unbounded issue below
 	--origin.x <= "010100000" - to_ufixed(hout_cat, 15, -16);
 	--origin.y <= "01111000" - to_ufixed(vout_cat, 15, -16);
-	origin.x <= to_ufixed(hout_cat, 15, -16);
-	origin.y <= to_ufixed(vout_cat, 15, -16);
+	origin.x <= to_sfixed(hout_cat, 15, -16);
+	origin.y <= to_sfixed(vout_cat, 15, -16);
 	origin.z <= x"00000000";
 
 	-- Pixel coordinates

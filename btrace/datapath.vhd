@@ -48,7 +48,7 @@ architecture arch of datapath is
 	signal s_gen_px, s_gen_py, s_pixel_x, s_pixel_y, s_addr_buf_x, s_addr_buf_y: std_logic_vector(9 downto 0);
 	signal s_frame_buf_rgb: std_logic_vector(11 downto 0);
 	signal s_arbitrate: std_logic;
-	constant myObject: object_t := ((x"00000000", x"00000000", x"0F000000"), x"0F000000", red, '0');
+	constant myObject: object_t := ((x"00000000", x"00000000", x"00100000"), x"00010000", red, '0');
 	signal hit_something: std_logic_vector(1 downto 0);
 
 	-- VGA sync/output interface

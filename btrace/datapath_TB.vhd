@@ -140,6 +140,7 @@ begin
 		wait for 10*clkPd;
 		start <= '1';
 		wait for 2*clkPd;
+		start <= '0';
 
 		-- Begin test bench
 		--while not(endfile(testStimFile)) loop
@@ -162,7 +163,7 @@ begin
 			
 			-- Controller inputs (Next state and datapath status)
 			wait until (clk'event and clk = '0');
-			if z_to_buf = '1' then 
+			if (z_to_buf = '1') and (controller_state = s_cycle) then 
 				write(reportLine, RGB);
 				writeLine(testResults, reportLine);
 			end if;
@@ -178,6 +179,7 @@ begin
 	inc_y <= '1' when ((controller_state = s_clear_z_reg) and (last_x = '1') and (last_y = '0')) else '0';
 	inc_x <= '1' when ((controller_state = s_clear_z_reg) and (last_x = '0')) else '0';
 	clr_y <= '1' when (controller_state = s_clear) else '0';
+	-- Add s_clear to clr_x
 	clr_x <= '1' when ((controller_state = s_clear_z_reg) and ((last_x = '1') or (last_y = '1'))) else '0';
 	en_z_reg <= '1' when (controller_state = s_compute) else '0';
 	clr_z_reg <= '1' when (controller_state = s_clear_z_reg) or (controller_state = s_clear) else '0';
