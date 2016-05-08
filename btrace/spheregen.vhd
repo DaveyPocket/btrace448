@@ -21,6 +21,7 @@ end sphere_gen;
 architecture arch of sphere_gen is
 	signal v: vector;
 	signal q, dot_self, vv, subr, ex_size: sfixed((2*int)-1 downto -(2*frac));
+	signal q_inv: sfixed((2*int) downto -(2*frac));
 	signal mul, q_sq, disc: sfixed((4*int)-1 downto -(4*frac));
 begin
 	-- Could be replaced with something more compact.
@@ -42,4 +43,6 @@ begin
 
 	result <= x"00000000";
 	--Square root unit....
+	q_inv <= -q;
+	--result <= q_inv((2*int)-1 downto -(2*frac)) - sq_result;
 end arch;

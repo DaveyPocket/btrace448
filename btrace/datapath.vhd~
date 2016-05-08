@@ -78,7 +78,4 @@ begin
 	-- origin_reg
 	origin_reg: entity work.point_reg port map(clk, rst, set_org, pre_point, origin);
 
-
-
-
 end arch;
