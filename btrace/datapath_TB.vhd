@@ -61,7 +61,7 @@ architecture test_bench of datapath_TB is
 	constant my_point: point := ((others => '0'), (others => '0'), my_z);
 	
 	
-	constant my_object_point: point := ((others => '0'), obj_z, obj_z);
+	constant my_object_point: point := (obj_z, obj_z, obj_z);
 	constant my_object: object := (my_object_point, obj_size, x"FFF");
 	constant no_object: point := ((others => '0'), (others => '0'), my_z);
 begin
