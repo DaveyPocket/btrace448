@@ -48,7 +48,7 @@ architecture arch of datapath is
 	constant screen_z: sfixed := to_sfixed(0, 15, -16);
 	constant screen_width: std_logic_vector(8 downto 0) := '1' & x"40";
 	constant screen_height: std_logic_vector(7 downto 0) := x"F0";
-	constant max_objects: std_logic_vector(w_obj_count-1 downto 0) := x"F";
+	constant max_objects: std_logic_vector(w_obj_count-1 downto 0) := x"0";
 	constant max_distance: std_logic_vector(w_t-1 downto 0) := std_logic_vector(to_unsigned(500000, w_t));
 	constant pre_cat_x: std_logic_vector(15 - w_px downto 0) := (others => '0');
 	constant post_cat: std_logic_vector(15 downto 0) := (others => '0');

@@ -54,7 +54,16 @@ architecture test_bench of datapath_TB is
 	--file testStimFile: text open read_mode is "microprogram.prog"
 	file testResults: text open write_mode is "results.resl";
 	
-	signal start, done: std_logic := '1';
+	signal start, done: std_logic := '0';
+	constant my_z: sfixed(15 downto -16) := to_sfixed(-1000, 15, -16);
+	constant obj_z: sfixed(15 downto -16) := to_sfixed(40, 15, -16);
+	constant obj_size: sfixed(15 downto -16) := to_sfixed(10, 15, -16);
+	constant my_point: point := ((others => '0'), (others => '0'), my_z);
+	
+	
+	constant my_object_point: point := ((others => '0'), (others => '0'), obj_z);
+	constant my_object: object := (my_object_point, obj_size, x"FFF");
+	constant no_object: point := ((others => '0'), (others => '0'), my_z);
 begin
 	uut: entity work.datapath port map(clk, rst,
 					-- Control inputs
@@ -137,13 +146,23 @@ begin
 		-- Index n corresponds to a address of micro program
 		variable n: integer := 0;
 	begin
+		e_set_camera <= '0';
+		e_set_obj <= '0';
 		wait for clkPd/3;
 		rst <= '1';
 		wait for clkPd;
 		rst <= '0';
 		
 		wait for clkPd;
-
+		e_camera_point <= my_point;
+		e_set_camera <= '1';
+		wait for clkPd;
+		e_set_camera <= '0';
+		e_obj_addr <= (others => '0');
+		e_obj_data <= my_object;
+		e_set_obj <= '1';
+		wait for clkPd;
+		e_set_obj <= '0';
 		wait for 10*clkPd;
 		start <= '1';
 		wait for 2*clkPd;
@@ -175,7 +194,7 @@ begin
 				writeLine(testResults, reportLine);
 			end if;
 		end loop;
-		report "Done testing." severity note;
+		report "Done testing." severity error;
 		wait;
 	end process testProc;
 	clr_hit <= '1' when controller_state = s_start else '0';
