@@ -20,23 +20,25 @@ end sphere_gen;
 
 architecture arch of sphere_gen is
 	signal v: vector;
-	signal q, dot_self, vv, subr: sfixed((2*int)-1 downto -(2*frac));
-	signal mul, q_sq, disc: sfixed((4*int)-1 downto -(2*frac));
+	signal q, dot_self, vv, subr, ex_size: sfixed((2*int)-1 downto -(2*frac));
+	signal mul, q_sq, disc: sfixed((4*int)-1 downto -(4*frac));
 begin
 	-- Could be replaced with something more compact.
-	v.m_x <= (ray_origin.x - obj.position.x);
-	v.m_y <= (ray_origin.y - obj.position.y);
-	v.m_z <= (ray_origin.z - obj.position.z);
+	v.m_x <= (ray_origin.x(14 downto -16) - obj.position.x(14 downto -16));
+	v.m_y <= (ray_origin.y(14 downto -16) - obj.position.y(14 downto -16));
+	v.m_z <= (ray_origin.z(14 downto -16) - obj.position.z(14 downto -16));
 	q_dot: entity work.dot generic map(int, frac) port map(v, direction_vector, q);
 	dot_self_dot: entity work.dot generic map(int, frac) port map(direction_vector, direction_vector, dot_self);
 	vv_dt: entity work.dot generic map(int, frac) port map(v, v, vv);
 
-	subr <= vv-obj.size;
-	mul <= subr*dot_self;
+	ex_size <= resize(obj.size(15 downto -16), ex_size);
+
+	subr <= vv(30 downto -32) - ex_size(30 downto -32);
+	mul <= subr * dot_self;
 	q_sq <= q*q;
 
-	disc <= q_sq - mul;
-	obj_hit <= '1' when disc(127) = '0' else '0';
+	disc <= q_sq(62 downto -64) - mul(62 downto -64);
+	obj_hit <= '1' when disc(63) = '0' else '0';
 
 	result <= x"00000000";
 	--Square root unit....

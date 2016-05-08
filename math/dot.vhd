@@ -13,9 +13,11 @@ end dot;
 
 architecture arch of dot is
 	signal r1, r2, r3: sfixed((2*int)-1 downto -(2*frac));
+	signal cr: sfixed((2*int)+1 downto -(2*frac));
 begin
 	r1 <= v1.m_x * v2.m_x;
 	r2 <= v1.m_y * v2.m_y;
 	r3 <= v1.m_z * v2.m_z;
-	result <= r1 + r2 + r3;
+	cr <= r1 + r2 + r3;
+	result <= cr((2*int)-1 downto -(2*frac));
 end arch;
