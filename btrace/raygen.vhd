@@ -99,7 +99,7 @@ begin
 	p_x <= '0' & houtput;
 	p_y <= "00" & voutput;
 
-	last_x <= '1' when houtput = "101000000" else '0';
-	last_y <= '1' when voutput = x"F0" else '0';
+	last_x <= '1' when houtput = "100111111" else '0';
+	last_y <= '1' when voutput = x"EF" else '0';
 
 end arch;

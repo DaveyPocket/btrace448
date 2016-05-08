@@ -12,7 +12,8 @@ entity reg is
 	port(clk, rst: in std_logic;
 		en, clr: in std_logic;
 		D: in std_logic_vector(N-1 downto 0);
-		Q: out std_logic_vector(N-1 downto 0) := (others => '0'));
+		Q: out std_logic_vector(N-1 downto 0) := (others => '0');
+		init: in std_logic_vector(N-1 downto 0));
 end reg;
 
 architecture arch of reg is
@@ -24,7 +25,7 @@ begin
 			Q <= zeros;
 		elsif rising_edge(clk) then
 			if clr = '1' then
-				Q <= zeros;
+				Q <= init;
 			elsif en = '1' then
 				Q <= D;
 			end if;

@@ -13,11 +13,11 @@ architecture arch of spheregen_TB is
 	constant clkPd: time := 20 ns;
 	signal clk, rst: std_logic;
 
-	signal d_vect: vector := (x"00000000", x"00000000", x"00010000");
+	signal d_vect: vector := (x"00000000", x"00000000", x"02000000");
 	signal origin_point: point := (x"00000000", x"00000000", x"00000000");
 	-- should be positioned at z = 16, x = 0, y = 0
 	-- size 2
-	signal myObject: object_t := ((x"00000000", x"00000000", x"00100000"), x"00040000", red, '0');
+	signal myObject: object_t := ((x"00000000", x"00000000", x"00100000"), x"00500000", red, '0');
 	
 	signal obj_hit: std_logic;
 	signal result: std_logic_vector(31 downto 0);

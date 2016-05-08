@@ -9,10 +9,10 @@ use work.btrace_pack.all;
 entity sphere_gen is
 	generic(int, frac: integer := 16);
 	port(clk, rst: in std_logic;
-		direction: in vector;
-		origin: in point;
-		in_object: in object_t;
-		sqrt_result: out std_logic_vector((int+frac)-1 downto 0);
+		direction_vector: in vector;
+		ray_origin: in point;
+		obj: in object_t;
+		result: out std_logic_vector((int+frac)-1 downto 0);
 
 	-- Status
 		obj_hit: out std_logic);
@@ -20,48 +20,24 @@ end sphere_gen;
 
 architecture arch of sphere_gen is
 	signal v: vector;
-	signal m_xc, m_yc, m_zc: sfixed(16 downto -16);
-	signal dd, q, qq, vv, b, mula, mulb, disc: std_logic_vector((int+frac)-1 downto 0);
-	signal mul1, mul2, qmul: std_logic_vector((2*(int+frac))-1 downto 0);
+	signal q, dot_self, vv, subr: sfixed((2*int)-1 downto -(2*frac));
+	signal mul, q_sq, disc: sfixed((4*int)-1 downto -(2*frac));
 begin
-	m_xc <= origin.x - in_object.position.x;
-	m_yc <= origin.y - in_object.position.y;
-	m_zc <= origin.z - in_object.position.z;
-	v.m_x <= m_xc(15 downto -16);
-	v.m_y <= m_yc(15 downto -16);
-	v.m_z <= m_zc(15 downto -16);
+	-- Could be replaced with something more compact.
+	v.m_x <= (ray_origin.x - obj.position.x);
+	v.m_y <= (ray_origin.y - obj.position.y);
+	v.m_z <= (ray_origin.z - obj.position.z);
+	q_dot: entity work.dot generic map(int, frac) port map(v, direction_vector, q);
+	dot_self_dot: entity work.dot generic map(int, frac) port map(direction_vector, direction_vector, dot_self);
+	vv_dt: entity work.dot generic map(int, frac) port map(v, v, vv);
 
+	subr <= vv-obj.size;
+	mul <= subr*dot_self;
+	q_sq <= q*q;
 
-	-- Dot products, good
-	dot1: entity work.dot port map(v, direction, q);
-	dot2: entity work.dot port map(direction, direction, dd);
-	dot3: entity work.dot port map(v, v, vv);
-	b <= std_logic_vector(in_object.size);
-	
-	-- Multiplication, good
-	mul1 <= b*dd;
-	mul2 <= vv*dd;
-	qmul <= q*q;
-	mula <= mul1(50 downto 35) & mul1(35 downto 20);
-	mulb <= mul2(50 downto 35) & mul2(35 downto 20);
-	qq <= qmul(50 downto 35) & qmul(35 downto 20);
+	disc <= q_sq - mul;
+	obj_hit <= '1' when disc(127) = '0' else '0';
 
-	-- Discriminant, good
-	disc <= qq - mulb + mula;
-	-- Object hit if discriminant is positive
-	obj_hit <= '1' when disc(31) = '0' else '0';
-
-	-- Square root unit
-	sqrt: entity work.squareroot port map(clk, disc, sqrt_result);
-	
+	result <= x"00000000";
+	--Square root unit....
 end arch;
-
--- Attributes of sphere needed
--- Sphere center (position)
--- Sphere radius (constant)
--- Shade (shade_type)
--- Non-normalized t-value (one sided)
-
--- Other attributes needed
--- ray origin
--- direction vector (no unit vector)
