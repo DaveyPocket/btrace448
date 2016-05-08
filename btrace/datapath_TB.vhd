@@ -56,12 +56,12 @@ architecture test_bench of datapath_TB is
 	
 	signal start, done: std_logic := '0';
 	constant my_z: sfixed(15 downto -16) := to_sfixed(-1000, 15, -16);
-	constant obj_z: sfixed(15 downto -16) := to_sfixed(40, 15, -16);
-	constant obj_size: sfixed(15 downto -16) := to_sfixed(10, 15, -16);
+	constant obj_z: sfixed(15 downto -16) := to_sfixed(100, 15, -16);
+	constant obj_size: sfixed(15 downto -16) := to_sfixed(80, 15, -16);
 	constant my_point: point := ((others => '0'), (others => '0'), my_z);
 	
 	
-	constant my_object_point: point := ((others => '0'), (others => '0'), obj_z);
+	constant my_object_point: point := ((others => '0'), obj_z, obj_z);
 	constant my_object: object := (my_object_point, obj_size, x"FFF");
 	constant no_object: point := ((others => '0'), (others => '0'), my_z);
 begin

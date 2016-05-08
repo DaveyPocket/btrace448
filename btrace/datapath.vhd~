@@ -48,11 +48,11 @@ architecture arch of datapath is
 	constant screen_z: sfixed := to_sfixed(0, 15, -16);
 	constant screen_width: std_logic_vector(8 downto 0) := '1' & x"40";
 	constant screen_height: std_logic_vector(7 downto 0) := x"F0";
-	constant max_objects: std_logic_vector(w_obj_count-1 downto 0) := x"F";
+	constant max_objects: std_logic_vector(w_obj_count-1 downto 0) := x"0";
 	constant max_distance: std_logic_vector(w_t-1 downto 0) := std_logic_vector(to_unsigned(500000, w_t));
-	constant pre_cat_x: std_logic_vector(31 - w_px downto 0) := (others => '0');
+	constant pre_cat_x: std_logic_vector(15 - w_px downto 0) := (others => '0');
 	constant post_cat: std_logic_vector(15 downto 0) := (others => '0');
-	constant pre_cat_y: std_logic_vector(31 - w_py downto 0) := (others => '0');
+	constant pre_cat_y: std_logic_vector(15 - w_py downto 0) := (others => '0');
 
 	signal px, x: std_logic_vector(w_px-1 downto 0);
 	signal pixel_x, pixel_y: std_logic_vector(9 downto 0);
@@ -61,7 +61,7 @@ architecture arch of datapath is
 	signal subx, suby, subz: sfixed(int downto -frac); -- No int-1 due to carry bit
 	signal pre_vector, direction_vector: vector;
 	signal i: std_logic_vector(w_obj_count-1 downto 0);
-	signal obj_close, obj_hit: std_logic;
+	signal obj_close, obj_hit, and_out: std_logic;
 	signal z_temp, t_std: std_logic_vector(31 downto 0);
 	signal obj_temp, object_records: object;
 	--signal t: sfixed(15 downto -16);
@@ -131,10 +131,10 @@ begin
 
 	-- store
 	and_out <= obj_hit and obj_close;
-	obj_valud <= and_out;
+	obj_valid <= and_out;
 
 	-- hit_reg
-	hit_reg: entity work.dff port map('1', clk, and_out,  rst, clr_hit, hit_something);
+	hit_reg: entity work.dff port map('0', clk, and_out,  rst, clr_hit, hit_something);
 
 	-- obj_temp_reg
 	obj_temp_reg: entity work.object_reg port map(clk, rst, store, object_records, obj_temp);
