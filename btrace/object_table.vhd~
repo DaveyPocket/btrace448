@@ -19,7 +19,7 @@ begin
 	process(clk)
 	begin
 		if rising_edge(clk) then
-			data(integer(to_unsigned(address_in))) <= object_in;
+			data(integer(to_unsigned(address))) <= object_in;
 		end if;
 	end process;
 	object_out <= data(integer(to_unsigned(address)));

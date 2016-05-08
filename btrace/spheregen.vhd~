@@ -8,7 +8,7 @@ use work.btrace_pack.all;
 
 entity sphere_gen is
 	generic(int, frac: integer := 16);
-	port(clk: in std_logic;
+	port(clk, rst: in std_logic;
 		direction_vector: in vector;
 		ray_origin: in point;
 		obj: in object_t;

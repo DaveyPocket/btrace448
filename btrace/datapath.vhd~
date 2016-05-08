@@ -8,7 +8,7 @@ library ieee;
 library ieee_proposed.all;
 use ieee_proposed.fixed_pkg.all;
 use ieee.std_logic_1164.all;
-use ieee.std_logic_signed.all;
+use ieee.numeric_std.all;
 use work.btrace_pack.all;
 
 entity datapath is
@@ -16,21 +16,37 @@ entity datapath is
 	e_set_camera: in std_logic;
 	init_x, init_y, inc_x, inc_y: in std_logic;
 	set_vector, set_org: in std_logic;
-	last_x, last_y: out std_logic;
+	next_obj, start_search: in std_logic;
+	clr_z_reg, clr_hit: in std_logic;
+	e_camera_point: in point;
+	e_set_obj: in std_logic;
+	e_obj_addr: in std_logic_vector(3 downto 0);
+	e_obj_data: in object;
+	last_x, last_y, last_obj, hit_something: out std_logic;
 end datapath;
 
 architecture arch of datapath is
 	constant int, frac: integer := 16;
 	constant w_px: integer := 8;
 	constant w_py: integer := 9;
+	constant w_obj_count: integer := 4;
+	constant w_t: integer := 32;
 	constant screen_z: sfixed := to_sfixed(0, 15, -16);
 	constant screen_width: std_logic_vector(8 downto 0) := x"140";
 	constant screen_height: std_logic_vector(7 downto 0) := x"F0";
+	constant max_objects: std_logic_vector(w_obj_count-1 downto 0) := x"F";
+	constant max_distance: std_logic_vector(w_t-1 downto 0) := std_logic_vector(to_unsigned(500000, max_distance'length));
+
 	signal px, x: std_logic_vector(w_px-1 downto 0);
 	signal py, y: std_logic_vector(w_py-1 downto 0);
 	signal camera_point, pre_point, origin: point;
 	signal subx, suby, subz: sfixed(int downto -frac); -- No int-1 due to carry bit
 	signal pre_vector, direction_vector: vector;
+	signal i: std_logic_vector(w_obj_count-1 downto 0);
+	signal store, obj_close, obj_hit: std_logic;
+	signal z_temp, t_std: std_logic_vector(31 downto 0);
+	signal obj_temp: object;
+	signal t: sfixed(15 downto -16);
 begin 
 -- Ray generator--
 	-- x_counter
@@ -51,7 +67,7 @@ begin
 	y <= ('0' & screen_height(7 downto 1)) - py;
 
 	-- camera_reg
-	camera_reg: entity work.reg port map(clk, rst, e_set_camera, ?e_camera_point, camera_point);
+	camera_reg: entity work.reg port map(clk, rst, e_set_camera, e_camera_point, camera_point);
 
 	-- subx
 	subx <= to_sfixed(x, 15, -16) - camera_point.x;
@@ -77,5 +93,33 @@ begin
 
 	-- origin_reg
 	origin_reg: entity work.point_reg port map(clk, rst, set_org, pre_point, origin);
+
+	-- i_reg
+	i_counter: entity work.counter generic map (w_obj_count) port map(clk, rst, start_search, next_obj, '0', x"0", i);
+
+	-- comp_i
+	last_obj <= '1' when (i = max_objects) else '0';
+
+	-- z_temp_reg
+	t_std <= std_logic_vector(t);
+	z_temp_reg: entity work.reg generic map(32) port map(clk, rst, store, clr_z_reg, t, z_temp, max_distance);
+
+	-- comp_t
+	obj_close <= '1' when (signed(t) < signed(z_temp)) else '0';
+
+	-- store
+	store <= obj_hit and obj_close;
+
+	-- hit_reg
+	hit_reg: entity work.dff port map('1', clk, store,  rst, clr_hit, hit_something);
+
+	-- obj_temp_reg
+	obj_temp_reg: entity work.object_reg port map(clk, rst, store, object_records, obj_temp);
+
+	-- Sphere generator
+	sphere_generator: entity work.sphere_gen generic map(16, 16) port map(clk, direction_vector, origin, object_records, t, obj_hit);
+
+	-- Object record table
+	object_record_tab: entity work.object_table port map(clk, e_set_obj, i, e_obj_addr, e_obj_data, object_records);
 
 end arch;
