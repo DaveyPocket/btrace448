@@ -17,11 +17,10 @@ package btrace_pack is
 			m_x, m_y, m_z: sfixed(15 downto -16);
 		end record;
 
-	type object_t is
+	type object is
 		record
 			position: point;
 			size: sfixed(15 downto -16);
-			color: color_t;
-			o_type: std_logic;
+			color: std_logic_vector(11 downto 0);
 		end record;
 end btrace_pack;

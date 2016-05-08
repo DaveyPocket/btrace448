@@ -1,5 +1,7 @@
 library ieee;
+library ieee_proposed;
 use ieee.std_logic_1164.all;
+use ieee_proposed.fixed_pkg.all;
 use work.btrace_pack.all;
 
 entity object_reg is
@@ -9,7 +11,8 @@ entity object_reg is
 end object_reg;
 
 architecture arch of object_reg is
-	constant zero_object: object := ((others => '0'), (others => '0'), (others => '0'));
+	constant zero_point: point := ((others => '0'), (others => '0'), (others => '0'));
+	constant zero_object: object := (zero_point, (others => '0'), (others => '0'));
 begin
 	process(clk, rst)
 	begin

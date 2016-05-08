@@ -8,14 +8,14 @@ entity buf is
 		en: in std_logic;
 		Din: in std_logic_vector(11 downto 0);
 		Dout: out std_logic_vector(11 downto 0);
-		iAddr: in std_logic_vector(N-1 downto 0));
+		iAddr: in std_logic_vector(N-1 downto 0);
 		Addr: in std_logic_vector(N-1 downto 0));
 end buf;
 
 architecture arch of buf is
 	type ram_t is array(0 to (2**N)-1) of std_logic_vector(11 downto 0);
 	signal ram: ram_t;	-- Uninitialized!
-	signal addrReg: std_logic_vector(N-1 downto 0);
+	signal addrRegi, addrRego: std_logic_vector(N-1 downto 0);
 begin
 
 	Dout <= ram(to_integer(unsigned(addrRego)));

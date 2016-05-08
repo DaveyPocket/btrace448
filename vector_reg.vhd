@@ -8,7 +8,7 @@ entity vector_reg is
 		Dout: out vector);
 end vector_reg;
 
-architecture arch of vector is
+architecture arch of vector_reg is
 	constant zero_vector: vector := ((others => '0'), (others => '0'), (others => '0'));
 begin
 	process(clk, rst)

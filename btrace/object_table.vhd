@@ -8,19 +8,19 @@ entity object_table is
 		en: in std_logic;
 		address: in std_logic_vector(3 downto 0);
 		address_in: in std_logic_vector(3 downto 0);
-		object_in: in object_t;
-		object_out: out object_t);
+		object_in: in object;
+		object_out: out object);
 end object_table;
 
 architecture arch of object_table is
-	type data_t is array(0 to 15) of object_t;
+	type data_t is array(0 to 15) of object;
 	signal data: data_t;
 begin
 	process(clk)
 	begin
 		if rising_edge(clk) then
-			data(integer(to_unsigned(address_in))) <= object_in;
+			data(to_integer(unsigned(address_in))) <= object_in;
 		end if;
 	end process;
-	object_out <= data(integer(to_unsigned(address)));
+	object_out <= data(to_integer(unsigned(address)));
 end arch;

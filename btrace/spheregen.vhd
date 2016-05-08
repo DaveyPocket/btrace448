@@ -11,7 +11,7 @@ entity sphere_gen is
 	port(clk: in std_logic;
 		direction_vector: in vector;
 		ray_origin: in point;
-		obj: in object_t;
+		obj: in object;
 		result: out std_logic_vector((int+frac)-1 downto 0);
 
 	-- Status
