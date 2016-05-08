@@ -22,7 +22,9 @@ entity datapath is
 	e_set_obj: in std_logic;
 	e_obj_addr: in std_logic_vector(3 downto 0);
 	e_obj_data: in object;
-	last_x, last_y, last_obj, hit_something: out std_logic;
+	paint: in std_logic;
+	last_x, last_y, last_obj, hsync, vsync out std_logic;
+	rgb: out std_logic_vector(11 downto 0);
 end datapath;
 
 architecture arch of datapath is
@@ -37,8 +39,8 @@ architecture arch of datapath is
 	constant max_objects: std_logic_vector(w_obj_count-1 downto 0) := x"F";
 	constant max_distance: std_logic_vector(w_t-1 downto 0) := std_logic_vector(to_unsigned(500000, max_distance'length));
 
-	signal px, x: std_logic_vector(w_px-1 downto 0);
-	signal py, y: std_logic_vector(w_py-1 downto 0);
+	signal px, x, pixel_x: std_logic_vector(w_px-1 downto 0);
+	signal py, y, pixel_y: std_logic_vector(w_py-1 downto 0);
 	signal camera_point, pre_point, origin: point;
 	signal subx, suby, subz: sfixed(int downto -frac); -- No int-1 due to carry bit
 	signal pre_vector, direction_vector: vector;
@@ -47,6 +49,8 @@ architecture arch of datapath is
 	signal z_temp, t_std: std_logic_vector(31 downto 0);
 	signal obj_temp: object;
 	signal t: sfixed(15 downto -16);
+	signal hit_something, video_on, p_tick: std_logic;
+	signal color_mux, buf_out, overlay_out: std_logic_vector(11 downto 0);
 begin 
 -- Ray generator--
 	-- x_counter
@@ -121,4 +125,18 @@ begin
 
 	-- Object record table
 	object_record_tab: entity work.object_table port map(clk, e_set_obj, i, e_obj_addr, e_obj_data, object_records);
+
+	-- screen
+	screen: entity work.frame_buf port map (clk, paint, color_mux, buf_out, px, py, pixel_x, pixel_y);
+
+	-- vga_sync
+	vga_device: entity work.vga_sync port map(clk, rst, hsync, vsync, video_on, p_tick, pixel_x, pixel_y);
+
+	-- Multiplexers
+	color_mux <= obj_temp.color when hit_something = '1' else x"00F";
+	overlay_out <= buf_out when overlay_on = '0' else rgb_overlay;
+	rgb <= overlay_out when video_on = '1' else x"000";
+
+	-- Temporary
+	overlay_on <= '1'
 end arch;

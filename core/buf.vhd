@@ -8,6 +8,7 @@ entity buf is
 		en: in std_logic;
 		Din: in std_logic_vector(11 downto 0);
 		Dout: out std_logic_vector(11 downto 0);
+		iAddr: in std_logic_vector(N-1 downto 0));
 		Addr: in std_logic_vector(N-1 downto 0));
 end buf;
 
@@ -17,13 +18,14 @@ architecture arch of buf is
 	signal addrReg: std_logic_vector(N-1 downto 0);
 begin
 
-	Dout <= ram(to_integer(unsigned(addrReg)));
+	Dout <= ram(to_integer(unsigned(addrRego)));
 	process(clk)
 	begin
 		if rising_edge(clk) then
-			addrReg <= Addr;-- Inferring BRAM.........
+			addrRegi <= iAddr;-- Inferring BRAM.........
+			addrRego <= Addr;-- Inferring BRAM.........
 			if (en = '1') then
-				ram(to_integer(unsigned(addrReg))) <= Din;
+				ram(to_integer(unsigned(addrRegi))) <= Din;
 			end if;
 		end if;
 	end process;
