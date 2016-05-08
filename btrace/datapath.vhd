@@ -48,7 +48,7 @@ architecture arch of datapath is
 	signal s_gen_px, s_gen_py, s_pixel_x, s_pixel_y, s_addr_buf_x, s_addr_buf_y: std_logic_vector(9 downto 0);
 	signal s_frame_buf_rgb: std_logic_vector(11 downto 0);
 	signal s_arbitrate: std_logic;
-	constant myObject: object_t := ((x"00000000", x"00000000", x"00100000"), x"00010000", red, '0');
+	constant myObject: object_t := ((x"00A00000", x"00780000", x"00000100"), x"00000001", red, '0');
 	signal hit_something: std_logic_vector(1 downto 0);
 
 	-- VGA sync/output interface
@@ -62,7 +62,7 @@ begin
 	obj_counter: entity work.counter generic map(w_obj_tab) port map(clk, rst, clr_obj_count, next_obj, '0', x"00", s_obj_num);
 
 	-- Maximum objects register
-	max_obj_reg: entity work.reg generic map(w_obj_tab) port map(clk, rst, e_set_max, '0', e_num_obj, s_max_obj);
+	max_obj_reg: entity work.reg generic map(w_obj_tab) port map(clk, rst, e_set_max, '0', e_num_obj, s_max_obj, x"00");
 
 	-- Object index comparison
 	comp_obj_index: entity work.compare(arch_unsigned) generic map(8, eq) port map(s_obj_num, s_max_obj, last_obj);
@@ -80,10 +80,10 @@ begin
 
 
 	-- Depth (Z) register
-	z_reg: entity work.reg generic map(w_t_val) port map(clk, rst, s_store, clr_z_reg, s_t_val, s_z_reg_out);
+	z_reg: entity work.reg generic map(w_t_val) port map(clk, rst, s_store, clr_z_reg, s_t_val, s_z_reg_out, x"80000000");
 
 	-- Object proximity register
-	obj_prox_reg: entity work.reg generic map(w_obj_tab) port map(clk, rst, s_store, '0', s_obj_num, s_obj_sel);
+	obj_prox_reg: entity work.reg generic map(w_obj_tab) port map(clk, rst, s_store, '0', s_obj_num, s_obj_sel, x"00");
 
 	-- Z-register comparator
 	z_compare: entity work.compare(arch_signed) generic map(w_t_val, gte) port map(s_z_reg_out, s_t_val, s_compare_t);
@@ -120,5 +120,5 @@ begin
 
 	d_rgb <= x"FFF" when hit_something = "11" else x"000";
 
-	hit_s: entity work.reg generic map (2) port map (clk, rst, en_z_reg, clr_z_reg, "11", hit_something);
+	hit_s: entity work.reg generic map (2) port map (clk, rst, en_z_reg, clr_z_reg, "11", hit_something, "00");
 end arch;

@@ -12,7 +12,7 @@ entity sphere_gen is
 		direction: in vector;
 		origin: in point;
 		in_object: in object_t;
-		sqrt_result: out std_logic_vector((int+frac)-1 downto 0);
+		result: out std_logic_vector((int+frac)-1 downto 0);
 
 	-- Status
 		obj_hit: out std_logic);
@@ -21,8 +21,9 @@ end sphere_gen;
 architecture arch of sphere_gen is
 	signal v: vector;
 	signal m_xc, m_yc, m_zc: sfixed(16 downto -16);
-	signal dd, q, qq, vv, b, mula, mulb, disc: std_logic_vector((int+frac)-1 downto 0);
-	signal mul1, mul2, qmul: std_logic_vector((2*(int+frac))-1 downto 0);
+	signal dd, q, qq, vv, b: std_logic_vector((int+frac)-1 downto 0);
+	signal mul, qmul, disc: std_logic_vector((2*(int+frac))-1 downto 0);
+	signal sqrt_result: std_logic_vector((int+frac)-1 downto 0);
 begin
 	m_xc <= origin.x - in_object.position.x;
 	m_yc <= origin.y - in_object.position.y;
@@ -39,20 +40,20 @@ begin
 	b <= std_logic_vector(in_object.size);
 	
 	-- Multiplication, good
-	mul1 <= b*dd;
-	mul2 <= vv*dd;
+	mul <= (b-vv)*dd;
 	qmul <= q*q;
-	mula <= mul1(50 downto 35) & mul1(35 downto 20);
-	mulb <= mul2(50 downto 35) & mul2(35 downto 20);
-	qq <= qmul(50 downto 35) & qmul(35 downto 20);
+	--mula <= mul1(63 downto 48) & mul1(47 downto 32);
+--	mulb <= mul2(63 downto 48) & mul2(47 downto 32);
+--	qq <= qmul(63 downto 48) & qmul(47 downto 32);
 
 	-- Discriminant, good
-	disc <= qq - mulb + mula;
+	disc <= qmul - mul;
 	-- Object hit if discriminant is positive
-	obj_hit <= '1' when disc(31) = '0' else '0';
+	obj_hit <= '1' when disc(63) = '0' else '0';
 
 	-- Square root unit
-	sqrt: entity work.squareroot port map(clk, disc, sqrt_result);
+	sqrt: entity work.squareroot port map(clk, disc(63 downto 32), sqrt_result);
+	result <= (-q) - sqrt_result;
 	
 end arch;
 
