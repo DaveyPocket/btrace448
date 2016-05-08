@@ -191,7 +191,4 @@ begin
 		report "Done testing." severity note;
 		wait;
 	end process testProc;
-
-
-	-- Concurrent statement assignment go here.
 end test_bench;

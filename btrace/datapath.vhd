@@ -13,18 +13,29 @@ use work.btrace_pack.all;
 
 entity datapath is
 	port(clk, rst: in std_logic;
-	e_set_camera: in std_logic;
+	-- Control inputs
 	init_x, init_y, inc_x, inc_y: in std_logic;
 	set_vector, set_org: in std_logic;
 	next_obj, start_search: in std_logic;
 	clr_z_reg, clr_hit: in std_logic;
 	e_camera_point: in point;
+	paint: in std_logic;
+
+	-- External inputs
+	e_set_camera: in std_logic;
 	e_set_obj: in std_logic;
 	e_obj_addr: in std_logic_vector(3 downto 0);
 	e_obj_data: in object;
-	paint: in std_logic;
-	last_x, last_y, last_obj, hsync, vsync: out std_logic;
-	rgb: out std_logic_vector(11 downto 0));
+
+	-- Status outputs
+	last_x, last_y, last_obj: out std_logic 
+
+	-- External outputs
+	hsync, vsync: out std_logic;
+	rgb: out std_logic_vector(11 downto 0);
+	-- For debugging only, do not include in top level
+	d_rgb: out std_logic_vector(11 downto 0)
+	d_px, d_py: out std_logic_vector(8 downto 0));
 end datapath;
 
 architecture arch of datapath is
@@ -139,4 +150,7 @@ begin
 
 	-- Temporary
 	overlay_on <= '1';
+	d_rgb <= color_mux;
+	d_px <= px;
+	d_py <= '0' & py;
 end arch;
