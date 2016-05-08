@@ -2,7 +2,7 @@ library ieee;
 library ieee_proposed;
 use ieee_proposed.fixed_pkg.all;
 use ieee.std_logic_1164.all;
-use ieee.std_logic_signed.all;
+use ieee.numeric_std.all;
 use work.btrace_pack.all;
 -- This is used to test the intersection of a sphere with a ray.
 
@@ -23,6 +23,7 @@ architecture arch of sphere_gen is
 	signal q, dot_self, vv, subr, ex_size: sfixed((2*int)-1 downto -(2*frac));
 	signal q_inv: sfixed((2*int) downto -(2*frac));
 	signal mul, q_sq, disc: sfixed((4*int)-1 downto -(4*frac));
+	signal disc_std, sq_result: std_logic_vector(31 downto 0);
 begin
 	-- Could be replaced with something more compact.
 	v.m_x <= (ray_origin.x(14 downto -16) - obj.position.x(14 downto -16));
@@ -39,10 +40,10 @@ begin
 	q_sq <= q*q;
 
 	disc <= q_sq(62 downto -64) - mul(62 downto -64);
+	disc_std <= std_logic_vector(disc(31 downto 0)); -- not right... but do it anyway
 	obj_hit <= '1' when disc(63) = '0' else '0';
 
-	result <= x"00000000";
-	--Square root unit....
+	sq: entity work.squareroot port map(clk, disc_std, sq_result);
 	q_inv <= -q;
-	--result <= q_inv((2*int)-1 downto -(2*frac)) - sq_result;
+	result <= std_logic_vector(q_inv((2*int)-1 downto -(2*frac)) - to_sfixed(sq_result,15, -16));
 end arch;

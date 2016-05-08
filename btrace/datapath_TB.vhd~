@@ -10,7 +10,6 @@ library ieee;
 library ieee_proposed;
 use ieee_proposed.fixed_pkg.all;
 use ieee.std_logic_1164.all;
---use ieee.std_logic_unsigned.all;
 use ieee.numeric_std.all;
 use std.textio.all;
 use ieee.std_logic_textio.all; -- Synopsys package
@@ -18,35 +17,54 @@ use ieee.std_logic_textio.all; -- Synopsys package
 entity datapath_TB is
 end datapath_TB;
 
-
 architecture test_bench of datapath_TB is
 	constant numInputs: integer := 13;
 	signal clk, rst: std_logic;
-
 	-- Datapath inputs (control)
-	init_x, init_y, inc_x, inc_y: std_logic;
-	set_vector, set_org: std_logic;
-	next_obj, start_search: std_logic;
-	clr_z_reg, clr_hit: std_logic;
-	paint: std_logic;
+	signal init_x, init_y, inc_x, inc_y: std_logic;
+	signal set_vector, set_org: std_logic;
+	signal next_obj, start_search: std_logic;
+	signal clr_z_reg, clr_hit: std_logic;
+	signal store: std_logic;
+	signal paint: std_logic;
 
 	-- External inputs
-	e_set_camera: std_logic;
-	e_camera_point: point;
-	e_set_obj: std_logic;
-	e_obj_addr: std_logic_vector(3 downto 0);
-	e_obj_data: object;
+	signal e_set_camera: std_logic;
+	signal e_camera_point: point;
+	signal e_set_obj: std_logic;
+	signal e_obj_addr: std_logic_vector(3 downto 0);
+	signal e_obj_data: object;
 
 	-- Status outputs
-	last_x, last_y, last_obj: std_logic 
+	signal last_x, last_y, last_obj, obj_valid: std_logic;
 
 	-- For debugging only, do not include in top level
-	d_rgb: std_logic_vector(11 downto 0)
-	d_px, d_py: std_logic_vector(8 downto 0));
+	signal d_rgb: std_logic_vector(11 downto 0);
+	signal d_px, d_py: std_logic_vector(8 downto 0);
+
+	-- Controller statesinit_x, init_y, inc_x, inc_y: std_logic;
+	signal set_vector, set_org: std_logic;
+	signal next_obj, start_search: std_logic;
+	signal clr_z_reg, clr_hit: std_logic;
+	signal paint: std_logic;
+
+	-- External inputs
+	signal e_set_camera: std_logic;
+	signal e_camera_point: point;
+	signal e_set_obj: std_logic;
+	signal e_obj_addr: std_logic_vector(3 downto 0);
+	signal e_obj_data: object;
+
+	-- Status outputs
+	signal last_x, last_y, last_obj: std_logic;
+
+	-- For debugging only, do not include in top level
+	signal d_rgb: std_logic_vector(11 downto 0);
+	signal d_px, d_py: std_logic_vector(8 downto 0);
 
 	-- Controller states
 
-	type states_t is ();
+	type states_t is (s_idle, s_start, s_set, s_wait, s_next, s_done);
 	signal controller_state: states_t := s_idle;
 
 	-- Test bench
@@ -60,6 +78,7 @@ begin
 				  	set_vector, set_org,
 					next_obj, start_search,
 					clr_z_reg, clr_hit,
+					store,
 					paint,
 
 					-- External inputs
@@ -69,7 +88,7 @@ begin
 					e_obj_addr, e_obj_data,
 
 					-- Status outputs
-					last_x, last_y, last_obj,
+					last_x, last_y, last_obj, obj_valid
 
 					-- External outputs
 					open, open, open,
@@ -95,46 +114,31 @@ begin
 					if start = '1' then
 						controller_state <= s_clear;
 					end if;
-				when s_compute =>
-					controller_state <= s_cycle;
-				when s_clear =>
-					if obj_hit = '1' then
-						controller_state <= s_compute;
-					else
-						controller_state <= s_cycle;
-					end if;
-				when s_wait =>
-					if p_tick_out = '1' then
+				when s_start =>
+					controller_state <= s_set;
+				when s_set =>
+					controller_state <= s_next;
+				when s_next =>
+					if last_obj = '0' then
 						controller_state <= s_wait;
 					else
-						controller_state <= s_clear_z_reg;
-					end if;
-				when s_clear_z_reg =>
-					if (last_y and last_x) = '1' then
-						controller_state <= s_idle;
-					else
-						if obj_hit = '1' then
-							controller_state <= s_compute;
+						if last_x = '0' then
+							controller_state <= s_start;
 						else
-							controller_state <= s_cycle;
+							if last_y = '0' then
+								controller_state <= s_start;
+							else
+								controller_state <= done;
+							end if;
 						end if;
 					end if;
 				when others =>
-					if last_obj = '0' then
-						if obj_hit = '1' then
-							controller_state <= s_compute;
-						else
-							controller_state <= s_cycle;
-						end if;
+					if start = '1' then
+						controller_state <= s_done;
 					else
-						if p_tick_out = '1' then
-							controller_state <= s_wait;
-						else
-							controller_state <= s_clear_z_reg;
-						end if;
+						controller_state <= s_idle;
 					end if;
 			end case;
-
 		end if;
 	end process;
 
@@ -191,4 +195,15 @@ begin
 		report "Done testing." severity note;
 		wait;
 	end process testProc;
+	clr_hit <= '1' when controller_state = s_start else '0';
+	clr_z_reg <= '1' when controller_state = s_start else '0';
+	init_x <= '1' when (controller_state = s_idle) or ((controller_state = s_next) and ((last_obj and last_x) = '1') and (last_y = '0')) else '0';
+	inc_y <= '1' when ((controller_state = s_next) and ((last_obj and last_x) = '1') and (last_y = '0')) else '0';
+	inc_x <= '1' when ((controller_state = s_next) and (last_obj = '1') and (last_x = '0')) else '0';
+	init_y <= '1' when (controller_state = s_idle) else '0';
+	set_vector <= '1' when controller_state = s_set else '0';
+	set_org <= '1' when controller_state = s_set = '1' else '0';
+	store <= '1' when (controller_
+
+	-- Concurrent statement assignment go here.
 end test_bench;

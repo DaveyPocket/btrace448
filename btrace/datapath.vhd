@@ -18,23 +18,24 @@ entity datapath is
 	set_vector, set_org: in std_logic;
 	next_obj, start_search: in std_logic;
 	clr_z_reg, clr_hit: in std_logic;
-	e_camera_point: in point;
+	store: in std_logic;
 	paint: in std_logic;
 
 	-- External inputs
 	e_set_camera: in std_logic;
+	e_camera_point: in point;
 	e_set_obj: in std_logic;
 	e_obj_addr: in std_logic_vector(3 downto 0);
 	e_obj_data: in object;
 
 	-- Status outputs
-	last_x, last_y, last_obj: out std_logic 
+	last_x, last_y, last_obj, obj_valid: out std_logic;
 
 	-- External outputs
 	hsync, vsync: out std_logic;
 	rgb: out std_logic_vector(11 downto 0);
 	-- For debugging only, do not include in top level
-	d_rgb: out std_logic_vector(11 downto 0)
+	d_rgb: out std_logic_vector(11 downto 0);
 	d_px, d_py: out std_logic_vector(8 downto 0));
 end datapath;
 
@@ -49,6 +50,9 @@ architecture arch of datapath is
 	constant screen_height: std_logic_vector(7 downto 0) := x"F0";
 	constant max_objects: std_logic_vector(w_obj_count-1 downto 0) := x"F";
 	constant max_distance: std_logic_vector(w_t-1 downto 0) := std_logic_vector(to_unsigned(500000, w_t));
+	constant pre_cat_x: std_logic_vector(15 - w_px downto 0) := (others => '0');
+	constant post_cat: std_logic_vector(15 downto 0) := (others => '0');
+	constant pre_cat_y: std_logic_vector(15 - w_py downto 0) := (others => '0');
 
 	signal px, x: std_logic_vector(w_px-1 downto 0);
 	signal pixel_x, pixel_y: std_logic_vector(9 downto 0);
@@ -57,12 +61,13 @@ architecture arch of datapath is
 	signal subx, suby, subz: sfixed(int downto -frac); -- No int-1 due to carry bit
 	signal pre_vector, direction_vector: vector;
 	signal i: std_logic_vector(w_obj_count-1 downto 0);
-	signal store, obj_close, obj_hit: std_logic;
+	signal obj_close, obj_hit, and_out: std_logic;
 	signal z_temp, t_std: std_logic_vector(31 downto 0);
 	signal obj_temp, object_records: object;
 	--signal t: sfixed(15 downto -16);
 	signal hit_something, video_on, p_tick, overlay_on: std_logic;
 	signal color_mux, buf_out, overlay_out, rgb_overlay: std_logic_vector(11 downto 0);
+	signal cat_x, cat_y: std_logic_vector(31 downto 0);
 begin 
 -- Ray generator--
 	-- x_counter
@@ -86,10 +91,12 @@ begin
 	camera_reg: entity work.point_reg port map(clk, rst, e_set_camera, e_camera_point, camera_point);
 
 	-- subx
-	subx <= to_sfixed(x, 15, -16) - camera_point.x;
+	cat_x <= pre_cat_x & x & post_cat;
+	subx <= to_sfixed(cat_x, 15, -16) - camera_point.x;
 
 	-- suby
-	suby <= to_sfixed(y, 15, -16) - camera_point.y;
+	cat_y <= pre_cat_y & y & post_cat;
+	suby <= to_sfixed(cat_y, 15, -16) - camera_point.y;
 	
 	-- subz
 	subz <=  screen_z - camera_point.z;
@@ -103,8 +110,8 @@ begin
 	vect_reg: entity work.vector_reg port map(clk, rst, set_vector, pre_vector, direction_vector);
 
 	-- pre_point
-	pre_point.x <= to_sfixed(x, 15, -16);
-	pre_point.y <= to_sfixed(y, 15, -16);
+	pre_point.x <= to_sfixed(cat_x, 15, -16);
+	pre_point.y <= to_sfixed(cat_y, 15, -16);
 	pre_point.z <= screen_z;
 
 	-- origin_reg
@@ -123,10 +130,11 @@ begin
 	obj_close <= '1' when (signed(t_std) < signed(z_temp)) else '0';
 
 	-- store
-	store <= obj_hit and obj_close;
+	and_out <= obj_hit and obj_close;
+	obj_valid <= and_out;
 
 	-- hit_reg
-	hit_reg: entity work.dff port map('1', clk, store,  rst, clr_hit, hit_something);
+	hit_reg: entity work.dff port map('1', clk, and_out,  rst, clr_hit, hit_something);
 
 	-- obj_temp_reg
 	obj_temp_reg: entity work.object_reg port map(clk, rst, store, object_records, obj_temp);

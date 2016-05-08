@@ -17,12 +17,12 @@ architecture arch of spheregen_TB is
 	signal origin_point: point := (x"00000000", x"00000000", x"00000000");
 	-- should be positioned at z = 16, x = 0, y = 0
 	-- size 2
-	signal myObject: object_t := ((x"00000000", x"00000000", x"01900000"), x"00500000", red, '0');
+	signal myObject: object := ((x"00000000", x"00000000", x"01900000"), x"00500000", x"F00");
 	
 	signal obj_hit: std_logic;
 	signal result: std_logic_vector(31 downto 0);
 begin
-	uut: entity work.sphere_gen port map(clk, rst, d_vect, origin_point, myObject, result, obj_hit);
+	uut: entity work.sphere_gen port map(clk, d_vect, origin_point, myObject, result, obj_hit);
 
 	clkProc: process
 	begin
@@ -38,5 +38,6 @@ begin
 		wait for clkPd/3;
 		wait for clkPd;
 		rst <= '0';
+		wait;
 	end process mainProc;
 end arch;
