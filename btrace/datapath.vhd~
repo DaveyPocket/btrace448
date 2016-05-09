@@ -27,6 +27,7 @@ entity datapath is
 	e_set_obj: in std_logic;
 	e_obj_addr: in std_logic_vector(3 downto 0);
 	e_obj_data: in object;
+	e_max_objects: in std_logic_vector(3 downto 0);
 
 	-- Status outputs
 	last_x, last_y, last_obj, obj_valid: out std_logic;
@@ -48,7 +49,6 @@ architecture arch of datapath is
 	constant screen_z: sfixed := to_sfixed(0, 15, -16);
 	constant screen_width: std_logic_vector(8 downto 0) := '1' & x"40";
 	constant screen_height: std_logic_vector(7 downto 0) := x"F0";
-	constant max_objects: std_logic_vector(w_obj_count-1 downto 0) := x"0";
 	constant max_distance: std_logic_vector(w_t-1 downto 0) := std_logic_vector(to_unsigned(500000, w_t));
 	constant pre_cat_x: std_logic_vector(15 - w_px downto 0) := (others => '0');
 	constant post_cat: std_logic_vector(15 downto 0) := (others => '0');
@@ -68,6 +68,7 @@ architecture arch of datapath is
 	signal hit_something, video_on, p_tick, overlay_on: std_logic;
 	signal color_mux, buf_out, overlay_out, rgb_overlay: std_logic_vector(11 downto 0);
 	signal cat_x, cat_y: std_logic_vector(31 downto 0);
+	signal max_objects: std_logic_vector(w_obj_count-1 downto 0);
 begin 
 -- Ray generator--
 	-- x_counter
@@ -155,6 +156,9 @@ begin
 	color_mux <= obj_temp.color when hit_something = '1' else x"00F";
 	overlay_out <= buf_out when overlay_on = '0' else rgb_overlay;
 	rgb <= overlay_out when video_on = '1' else x"000";
+
+	-- Max object register
+	max_obj: entity work.reg generic map(4) port map(clk, rst, e_set_max, '0', e_max_objects, max_objects, x"0");
 
 	-- Temporary
 	overlay_on <= '1';

@@ -13,6 +13,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use std.textio.all;
 use ieee.std_logic_textio.all; -- Synopsys package
+use work.btrace_pack.all;
 
 entity datapath_TB is
 end datapath_TB;
@@ -34,6 +35,8 @@ architecture test_bench of datapath_TB is
 	signal e_set_obj: std_logic;
 	signal e_obj_addr: std_logic_vector(3 downto 0);
 	signal e_obj_data: object;
+	signal e_set_max: std_logic;
+	signal e_max_objects: std_logic_vector(3 downto 0);
 
 	-- Status outputs
 	signal last_x, last_y, last_obj, obj_valid: std_logic;
@@ -42,25 +45,6 @@ architecture test_bench of datapath_TB is
 	signal d_rgb: std_logic_vector(11 downto 0);
 	signal d_px, d_py: std_logic_vector(8 downto 0);
 
-	-- Controller statesinit_x, init_y, inc_x, inc_y: std_logic;
-	signal set_vector, set_org: std_logic;
-	signal next_obj, start_search: std_logic;
-	signal clr_z_reg, clr_hit: std_logic;
-	signal paint: std_logic;
-
-	-- External inputs
-	signal e_set_camera: std_logic;
-	signal e_camera_point: point;
-	signal e_set_obj: std_logic;
-	signal e_obj_addr: std_logic_vector(3 downto 0);
-	signal e_obj_data: object;
-
-	-- Status outputs
-	signal last_x, last_y, last_obj: std_logic;
-
-	-- For debugging only, do not include in top level
-	signal d_rgb: std_logic_vector(11 downto 0);
-	signal d_px, d_py: std_logic_vector(8 downto 0);
 
 	-- Controller states
 
@@ -71,6 +55,17 @@ architecture test_bench of datapath_TB is
 	constant clkPd: time := 20 ns;
 	--file testStimFile: text open read_mode is "microprogram.prog"
 	file testResults: text open write_mode is "results.resl";
+	
+	signal start, done: std_logic := '0';
+	constant my_z: sfixed(15 downto -16) := to_sfixed(-1000, 15, -16);
+	constant obj_z: sfixed(15 downto -16) := to_sfixed(100, 15, -16);
+	constant obj_size: sfixed(15 downto -16) := to_sfixed(80, 15, -16);
+	constant my_point: point := ((others => '0'), (others => '0'), my_z);
+	
+	
+	constant my_object_point: point := (obj_z, obj_z, obj_z);
+	constant my_object: object := (my_object_point, obj_size, x"FFF");
+	constant no_object: point := ((others => '0'), (others => '0'), my_z);
 begin
 	uut: entity work.datapath port map(clk, rst,
 					-- Control inputs
@@ -86,9 +81,10 @@ begin
 					e_camera_point,
 					e_set_obj,
 					e_obj_addr, e_obj_data,
+					e_set_max, e_max_objects,
 
 					-- Status outputs
-					last_x, last_y, last_obj, obj_valid
+					last_x, last_y, last_obj, obj_valid,
 
 					-- External outputs
 					open, open, open,
@@ -112,11 +108,13 @@ begin
 			case controller_state is
 				when s_idle =>
 					if start = '1' then
-						controller_state <= s_clear;
+						controller_state <= s_start;
 					end if;
 				when s_start =>
 					controller_state <= s_set;
 				when s_set =>
+					controller_state <= s_wait;
+				when s_wait => 
 					controller_state <= s_next;
 				when s_next =>
 					if last_obj = '0' then
@@ -128,7 +126,7 @@ begin
 							if last_y = '0' then
 								controller_state <= s_start;
 							else
-								controller_state <= done;
+								controller_state <= s_done;
 							end if;
 						end if;
 					end if;
@@ -151,16 +149,26 @@ begin
 		-- Index n corresponds to a address of micro program
 		variable n: integer := 0;
 	begin
+		e_max_objects <= x"1";
+		e_set_camera <= '0';
+		e_set_obj <= '0';
 		wait for clkPd/3;
 		rst <= '1';
 		wait for clkPd;
 		rst <= '0';
-		e_num_obj <= x"01";
-		e_set_max <= '1';
-		e_set_cam <= '1';
+		
 		wait for clkPd;
-		e_set_cam <= '0';
+		e_camera_point <= my_point;
+		e_set_camera <= '1';
+		e_set_max <= '1';
+		wait for clkPd;
 		e_set_max <= '0';
+		e_set_camera <= '0';
+		e_obj_addr <= (others => '0');
+		e_obj_data <= my_object;
+		e_set_obj <= '1';
+		wait for clkPd;
+		e_set_obj <= '0';
 		wait for 10*clkPd;
 		start <= '1';
 		wait for 2*clkPd;
@@ -187,12 +195,12 @@ begin
 			
 			-- Controller inputs (Next state and datapath status)
 			wait until (clk'event and clk = '0');
-			if (z_to_buf = '1') and (controller_state = s_cycle) then 
-				write(reportLine, RGB);
+			if (paint = '1') then 
+				write(reportLine, d_rgb);
 				writeLine(testResults, reportLine);
 			end if;
 		end loop;
-		report "Done testing." severity note;
+		report "Done testing." severity error;
 		wait;
 	end process testProc;
 	clr_hit <= '1' when controller_state = s_start else '0';
@@ -202,8 +210,12 @@ begin
 	inc_x <= '1' when ((controller_state = s_next) and (last_obj = '1') and (last_x = '0')) else '0';
 	init_y <= '1' when (controller_state = s_idle) else '0';
 	set_vector <= '1' when controller_state = s_set else '0';
-	set_org <= '1' when controller_state = s_set = '1' else '0';
-	store <= '1' when (controller_
+	set_org <= '1' when controller_state = s_set else '0';
+	store <= '1' when (controller_state = s_wait) and (obj_valid = '1') else '0';
+	paint <= '1' when (controller_state = s_next) and (last_obj = '1') else '0';
+	next_obj <= '1' when (controller_state = s_next) else '0';
+	start_search <= '1' when (controller_state = s_start) else '0';
+	done <= '1' when (controller_state = s_done) else '0';
 
 	-- Concurrent statement assignment go here.
 end test_bench;

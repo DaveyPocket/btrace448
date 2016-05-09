@@ -35,6 +35,8 @@ architecture test_bench of datapath_TB is
 	signal e_set_obj: std_logic;
 	signal e_obj_addr: std_logic_vector(3 downto 0);
 	signal e_obj_data: object;
+	signal e_set_max: std_logic;
+	signal e_max_objects: std_logic_vector(3 downto 0);
 
 	-- Status outputs
 	signal last_x, last_y, last_obj, obj_valid: std_logic;
@@ -79,6 +81,7 @@ begin
 					e_camera_point,
 					e_set_obj,
 					e_obj_addr, e_obj_data,
+					e_set_max, e_max_objects,
 
 					-- Status outputs
 					last_x, last_y, last_obj, obj_valid,
@@ -146,6 +149,7 @@ begin
 		-- Index n corresponds to a address of micro program
 		variable n: integer := 0;
 	begin
+		e_max_objects <= x"0";
 		e_set_camera <= '0';
 		e_set_obj <= '0';
 		wait for clkPd/3;
@@ -156,7 +160,9 @@ begin
 		wait for clkPd;
 		e_camera_point <= my_point;
 		e_set_camera <= '1';
+		e_set_max <= '1';
 		wait for clkPd;
+		e_set_max <= '0';
 		e_set_camera <= '0';
 		e_obj_addr <= (others => '0');
 		e_obj_data <= my_object;
