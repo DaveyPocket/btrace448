@@ -1,3 +1,5 @@
+-- Obtained from: http://academic.csuohio.edu/chu_p/rtl/fpga_vhdl_book/fpga_vhdl_src.zip
+
 -- Listing 13.1
 -- ROM with synchonous read (inferring Block RAM)
 -- character ROM

@@ -1,5 +1,5 @@
 # btrace448
-Hardware ray tracer
+Hardware ray tracer for Xilinx Artix-7 FPGA.
 
 ## Purpose of project
 
@@ -34,8 +34,10 @@ Status: The project, in this current revision, is unable to be implemented in ha
 - **btrace** - Ray tracing devices
 - **core** - Anything VGA and I/O
 - **math** - Arithmetic devices
+- **scripts** - Any scripts used to assist in the development of this project
+- **results** - Results from simulation
 
 ## References
 
-[Ray Tracing](https://en.wikipedia.org/wiki/Ray_tracing_(graphics)) - Wikipedia
-[FPGA Prototyping by VHDL Examples](http://academic.csuohio.edu/chu_p/rtl/fpga_vhdl.html) - Companion website to book
+- [Ray Tracing](https://en.wikipedia.org/wiki/Ray_tracing_(graphics)) - Wikipedia
+- [FPGA Prototyping by VHDL Examples](http://academic.csuohio.edu/chu_p/rtl/fpga_vhdl.html) - Companion website to book
