@@ -1,5 +1,8 @@
 library ieee;
+library ieee_proposed;
+use ieee_proposed.fixed_pkg.all;
 use ieee.std_logic_1164.all;
+use work.btrace_pack.all;
 
 entity top is
 	port(clk, rst: in std_logic;
@@ -59,7 +62,7 @@ begin
 					last_x, last_y, last_obj, obj_valid,
 
 					-- External outputs
-					hsync, vsync, rgb
+					hsync, vsync, rgb,
 
 					-- Debug
 					open, open, open);
@@ -79,6 +82,7 @@ begin
 		e_max_objects <= x"0";
 		e_set_camera <= btns;
 		e_set_obj <= btnr;
+		e_set_max <= btnr;
 		e_obj_data <= my_object;
 		e_obj_addr <= (others => '0');
 		e_camera_point <= my_point;

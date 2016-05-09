@@ -23,7 +23,7 @@ entity controller is
 	done: out std_logic;
 
 	-- Status inputs
-	last_x, last_y, last_obj, obj_valid, start: in std_logic;
+	last_x, last_y, last_obj, obj_valid, start: in std_logic);
 
 end controller;
 

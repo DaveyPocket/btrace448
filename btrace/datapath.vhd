@@ -70,7 +70,7 @@ architecture arch of datapath is
 	signal color_mux, buf_out, overlay_out, rgb_overlay: std_logic_vector(11 downto 0);
 	signal cat_x, cat_y: std_logic_vector(31 downto 0);
 	signal max_objects: std_logic_vector(w_obj_count-1 downto 0);
-begin 
+begin
 -- Ray generator--
 	-- x_counter
 	x_counter: entity work.counter generic map(w_px) port map(clk, rst, init_x, inc_x, '0', "000000000", px);
@@ -162,7 +162,7 @@ begin
 	max_obj: entity work.reg generic map(4) port map(clk, rst, e_set_max, '0', e_max_objects, max_objects, x"0");
 
 	-- Temporary
-	overlay_on <= '1';
+	overlay_on <= '0';
 	d_rgb <= color_mux;
 	d_px <= px;
 	d_py <= '0' & py;

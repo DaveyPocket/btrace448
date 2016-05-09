@@ -24,6 +24,7 @@ architecture arch of sphere_gen is
 	signal q_inv: sfixed((2*int) downto -(2*frac));
 	signal mul, q_sq, disc: sfixed((4*int)-1 downto -(4*frac));
 	signal disc_std, sq_result: std_logic_vector(31 downto 0);
+	signal resulta: std_logic_vector(32 downto 0);
 begin
 	-- Could be replaced with something more compact.
 	v.m_x <= (ray_origin.x(14 downto -16) - obj.position.x(14 downto -16));
@@ -45,5 +46,6 @@ begin
 
 	sq: entity work.squareroot port map(clk, disc_std, sq_result);
 	q_inv <= -q;
-	result <= std_logic_vector(q_inv((2*int)-1 downto -(2*frac)) - to_sfixed(sq_result,15, -16));
+	resulta <= std_logic_vector(q_inv((int)-1 downto -(frac)) - to_sfixed(sq_result,15, -16));
+	result <= resulta(31 downto 0);
 end arch;
