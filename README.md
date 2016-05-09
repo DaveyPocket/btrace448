@@ -11,23 +11,23 @@ The initial goal is to display spheres on a VGA display with simple point-light-
 
 - [x] Square-root LUT unit (Fixed-point representation)
   - [x] Test bench
-  - [ ] Linear interpolation
+  - ~~[ ] Linear interpolation~~
   - [ ] Generator scripts
 - [x] Ray generator unit
   - [x] Test bench
-  - [ ] Adjustable camera position
-  - [ ] Adjustable camera rotation
-- [ ] General purpose arithmetic
-  - [x] Subtraction
-  - [ ] Addition
-  - [ ] Multiplication
-- [ ] Object record table
-- [ ] Object-ray collision unit
+  - [x] Adjustable camera position
+  - ~~[ ] Adjustable camera rotation~~
+- [x] General purpose arithmetic
+- [x] Object record table
+- [x] Object-ray collision unit
 - [x] VGA display controller
   - [x] Frame buffer (BRAM)
-  - [ ] Read/write multi-access arbiter
+  - ~~[ ] Read/write multi-access arbiter~~
+    - Using dual-port BRAM
 - [x] 'btrace' package
-- [ ] Controller
+- [x] Controller
+
+Status: The project, in this current revision, is unable to be implemented in hardware due to timing constraints (Requires 100MHz clock frequency, ~33MHz attainable).
 
 ## Project hierarchy
 
