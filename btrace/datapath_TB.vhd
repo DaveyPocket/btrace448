@@ -1,7 +1,5 @@
 -- Btrace 448
---
--- TESTBENCH for
--- Datapath
+-- Datapath Test Bench
 --
 -- Bradley Boccuzzi
 -- 2016

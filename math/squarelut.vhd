@@ -1,6 +1,5 @@
 -- Btrace 448
--- Math
--- -Square root
+-- Square Root Look-Up Table
 --
 -- Bradley Boccuzzi
 -- 2016

@@ -1,3 +1,9 @@
+-- Btrace 448
+-- VGA Sync
+--
+-- Bradley Boccuzzi
+-- 2016
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.std_logic_unsigned.all;

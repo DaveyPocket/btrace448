@@ -1,6 +1,5 @@
 -- Btrace 448
--- Core
--- - Up/down counter
+-- Up/down counter
 --
 -- Bradley Boccuzzi
 -- 2016

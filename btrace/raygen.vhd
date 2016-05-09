@@ -3,6 +3,7 @@
 --
 -- Bradley Boccuzzi
 -- 2016
+-- !Remove from project
 
 library ieee;
 library ieee_proposed;

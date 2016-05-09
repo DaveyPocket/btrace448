@@ -1,3 +1,10 @@
+-- Btrace 448
+-- Ray Generator - Test Bench
+--
+-- Bradley Boccuzzi
+-- 2016
+-- !Remove from project
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.std_logic_unsigned.all;

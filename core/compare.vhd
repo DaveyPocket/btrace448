@@ -1,8 +1,8 @@
 -- Btrace 448
--- Core
--- - Unsigned Comparison
+-- (un)signed Comparison
 -- Bradley Boccuzzi
 -- 2016
+--! Remove from project
 
 library ieee;
 use ieee.std_logic_1164.all;
