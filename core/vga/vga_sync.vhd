@@ -1,3 +1,11 @@
+-- Btrace 448
+-- VGA Sync
+--
+-- Bradley Boccuzzi
+-- 2016
+
+-- Obtained from George Mason University
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.std_logic_unsigned.all;

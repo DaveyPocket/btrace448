@@ -1,3 +1,10 @@
+-- Btrace 448
+-- Sphere Generator
+-- - Computes ray-sphere intersection
+--
+-- Bradley Boccuzzi
+-- 2016
+
 library ieee;
 library ieee_proposed;
 use ieee_proposed.fixed_pkg.all;

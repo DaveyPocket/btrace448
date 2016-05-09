@@ -1,6 +1,6 @@
 -- Btrace 448
--- Math
--- -Square root
+-- Square Root Look-Up Table
+-- Implemented as BRAM, requires 1 clock cycle to compute.
 --
 -- Bradley Boccuzzi
 -- 2016

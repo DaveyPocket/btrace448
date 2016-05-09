@@ -1,3 +1,9 @@
+-- Btrace 448
+-- Rising Edge Detector
+--
+-- Bradley Boccuzzi
+-- 2016
+
 library ieee;
 use ieee.std_logic_1164.all;
 

@@ -1,3 +1,10 @@
+-- Btrace 448
+-- Output Interface
+--
+-- Bradley Boccuzzi
+-- 2016
+-- ! Remove this from project
+
 library ieee;
 use ieee.std_logic_1164.all;
 

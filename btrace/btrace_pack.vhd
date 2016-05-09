@@ -1,3 +1,9 @@
+-- Btrace 448
+-- Btrace Package
+--
+-- Bradley Boccuzzi
+-- 2016
+
 library ieee;
 library ieee_proposed;
 use ieee_proposed.fixed_pkg.all;

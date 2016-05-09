@@ -1,3 +1,9 @@
+-- Btrace 448
+-- D Flip-Flop
+--
+-- Bradley Boccuzzi
+-- 2016
+
 -- TODO Make set/reset
 library ieee;
 use ieee.std_logic_1164.all;

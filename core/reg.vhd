@@ -1,9 +1,9 @@
 -- Btrace 448
--- Core
--- - Register
+-- General Purpose Register
 --
 -- Bradley Boccuzzi
 -- 2016
+
 library ieee;
 use ieee.std_logic_1164.all;
 
