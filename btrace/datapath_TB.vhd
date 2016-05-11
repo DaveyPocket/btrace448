@@ -56,14 +56,22 @@ architecture test_bench of datapath_TB is
 	
 	signal start, done: std_logic := '0';
 	constant my_z: sfixed(15 downto -16) := to_sfixed(-1000, 15, -16);
-	constant obj_z: sfixed(15 downto -16) := to_sfixed(100, 15, -16);
-	constant obj_size: sfixed(15 downto -16) := to_sfixed(80, 15, -16);
 	constant my_point: point := ((others => '0'), (others => '0'), my_z);
+		
+	constant p1: sfixed(15 downto -16) := to_sfixed(25, 15, -16);
+	constant p2: sfixed(15 downto -16) := to_sfixed(100, 15, -16);
+	constant p3: sfixed(15 downto -16) := to_sfixed(-150, 15, -16);
+	constant p4: sfixed(15 downto -16) := to_sfixed(300, 15, -16);
+	constant obj12_size: sfixed(15 downto -16) := to_sfixed(80, 15, -16);
+	constant obj3_size: sfixed(15 downto -16) := to_sfixed(400, 15, -16);
+
 	
-	
-	constant my_object_point: point := (obj_z, obj_z, obj_z);
-	constant my_object: object := (my_object_point, obj_size, x"FFF");
-	constant no_object: point := ((others => '0'), (others => '0'), my_z);
+	constant obj_1_point: point := (p2, p2, p2);
+	constant obj_2_point: point := (p2, p2, p1);
+	constant obj_3_point: point := (p3, p3, p4);
+	constant object1: object := (obj_1_point, obj12_size, x"FFF");
+	constant object2: object := (obj_2_point, obj3_size, x"F00");
+	constant object3: object := (obj_3_point, obj3_size, x"0F0");
 begin
 	uut: entity work.datapath port map(clk, rst,
 					-- Control inputs
@@ -147,7 +155,7 @@ begin
 		-- Index n corresponds to a address of micro program
 		variable n: integer := 0;
 	begin
-		e_max_objects <= x"0";
+		e_max_objects <= x"2";
 		e_set_camera <= '0';
 		e_set_obj <= '0';
 		wait for clkPd/3;
@@ -163,7 +171,19 @@ begin
 		e_set_max <= '0';
 		e_set_camera <= '0';
 		e_obj_addr <= (others => '0');
-		e_obj_data <= my_object;
+		e_obj_data <= object1;
+		e_set_obj <= '1';
+		wait for clkPd;
+		e_set_obj <= '0';
+		e_obj_addr <= x"1";
+		e_obj_data <= object2;
+		wait for clkPd;
+		e_set_obj <= '1';
+		wait for clkPd;
+		e_set_obj <= '0';
+		e_obj_addr <= x"2";
+		e_obj_data <= object3;
+		wait for clkPd;
 		e_set_obj <= '1';
 		wait for clkPd;
 		e_set_obj <= '0';

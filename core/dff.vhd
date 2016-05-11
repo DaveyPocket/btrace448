@@ -20,7 +20,9 @@ begin
 		if rst = '1' then
 			Q <= '0';
 		elsif rising_edge(clk) then
-			if set = '1' then
+			if clr = '1' then
+				Q <= '0';
+			elsif set = '1' then
 				Q <= '1';
 			else
 				Q <= D;

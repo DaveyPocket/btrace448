@@ -136,7 +136,7 @@ begin
 	obj_valid <= and_out;
 
 	-- hit_reg
-	hit_reg: entity work.dff port map('0', clk, and_out,  rst, clr_hit, hit_something);
+	hit_reg: entity work.dff port map(hit_something, clk, and_out, rst, clr_hit, hit_something);
 
 	-- obj_temp_reg
 	obj_temp_reg: entity work.object_reg port map(clk, rst, store, object_records, obj_temp);
