@@ -20,7 +20,7 @@ type screen struct {
 func main() {
 	var err error
 	var resultColor color.Color
-	testBenchInput, err := os.Open("../xilinx/results.resl")
+	testBenchInput, err := os.Open("../../results.resl")
 	if err != nil {
 		panic(err)
 	}
@@ -32,7 +32,7 @@ func main() {
 	defer myfile.Close()
 	fmt.Println("Running...")
 	myScreen := screen{320, 240}
-	output := image.NewRGBA(image.Rect(0, 0, myScreen.width, myScreen.height))
+	output := image.NewRGBA(image.Rect(0, 0, myScreen.height, myScreen.width))
 
 	resultScanner := bufio.NewScanner(testBenchInput)
 	for row := 0; row < myScreen.height; row++ {
